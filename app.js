@@ -1,19 +1,21 @@
 const BASE = "https://script.google.com/macros/s/AKfycbyNCNM0vR7VSt-RYQB8ukOGwYa1WVgvjsohiC1MoLw1pk-aC5lO5hA7h2DNywaCLagiVQ/exec";
 const systems = [
- {id:"attendance",name:"เช็คชื่อนักเรียน",desc:"บันทึกและจัดการการเข้าเรียนของนักเรียน",category:"student",group:"student",tag:"งานนักเรียน",url:BASE,icon:"users",colors:["#3478D4","#EAF2FF","#D6E5FF"]},
- {id:"homevisit",name:"เยี่ยมบ้าน",desc:"บันทึกข้อมูลและติดตามการเยี่ยมบ้านนักเรียน",category:"student",group:"student",tag:"ดูแลช่วยเหลือ",url:BASE+"?page=HomeVisit",icon:"home",colors:["#D56C46","#FFF0E8","#F7D9CB"]},
- {id:"curriculum",name:"หลักสูตรสถานศึกษา",desc:"เข้าถึงข้อมูลและงานหลักสูตรสถานศึกษา",category:"academic",group:"academic",tag:"งานวิชาการ",url:BASE+"?page=curriculum",icon:"book",colors:["#805AD5","#F1EBFF","#E2D6FF"]},
- {id:"grade5",name:"ผล ปพ.5",desc:"ตรวจดูผลและข้อมูลรายงาน ปพ.5",category:"academic",group:"academic",tag:"รายงานผล",url:BASE+"?page=report_grade",icon:"chart",colors:["#247EAD","#E5F6FF","#CBEAF8"]},
- {id:"individual",name:"กรอก ปพ.6",desc:"กรอกข้อมูลผลการเรียนรายบุคคล",category:"academic",group:"academic",tag:"กรอกข้อมูล",url:BASE+"?page=individual",icon:"file",colors:["#C45C91","#FCEAF3","#F6D5E5"]},
- {id:"reportindi",name:"ผล ปพ.6",desc:"ดูรายงานผลการเรียนรายบุคคล",category:"academic",group:"academic",tag:"รายงานผล",url:BASE+"?page=report_indi",icon:"filecheck",colors:["#B87928","#FFF4DE","#F5E4B8"]},
- {id:"kindergarten",name:"กรอก อบ.",desc:"กรอกข้อมูลประเมินพัฒนาการเด็กปฐมวัย",category:"academic",group:"academic",tag:"ปฐมวัย",url:BASE+"?page=kindergarten",icon:"blocks",colors:["#198B78","#E2F8F1","#C5EEE1"]},
- {id:"reportkind",name:"ผล อบ.",desc:"ตรวจดูผลการประเมินเด็กปฐมวัย",category:"academic",group:"academic",tag:"รายงานผล",url:BASE+"?page=report_kind",icon:"clipboard",colors:["#D17C38","#FFF0E0","#F8DCC1"]},
- {id:"kinderbook",name:"เล่ม อบ.",desc:"จัดการและเข้าถึงเล่มรายงาน อบ.",category:"academic",group:"academic",tag:"เอกสารปฐมวัย",url:BASE+"?page=kinderbook",icon:"bookcheck",colors:["#5476C8","#E9EEFF","#D4DFFF"]},
- {id:"janitor",name:"ระบบภารโรง",desc:"แจ้งงานและติดตามงานอาคารสถานที่",category:"operations",group:"operations",tag:"อาคารสถานที่",url:"https://lermintech-cloud.github.io/SATID/",icon:"wrench",colors:["#B78326","#FFF5D9","#F4E6B5"]},
- {id:"calendar",name:"ปฏิทินวิชาการ",desc:"ดูปฏิทินและกิจกรรมสำคัญของโรงเรียน",category:"operations",group:"operations",tag:"ปฏิทิน",url:"https://lermintech-cloud.github.io/school-smart-miniapp/",icon:"calendar",colors:["#248C9A","#E0F7F7","#C4EBED"]},
- {id:"leave",name:"ระบบลา",desc:"เข้าสู่ระบบจัดการการลาของบุคลากร",category:"operations",group:"operations",tag:"งานบุคลากร",url:"https://script.google.com/macros/s/AKfycbzs09_lWx4swr4Zy_r1QTFGsjiwWIPmLujKLoXlRrriPuOxOiSHGmMaml8azHi1FmAE/exec",icon:"calendarcheck",colors:["#C45772","#FCEAF0","#F5D5DF"]}
+ {id:"attendance",name:"เช็คชื่อนักเรียน",desc:"บันทึกและจัดการการเข้าเรียนของนักเรียน",category:"student",group:"student",tag:"งานนักเรียน",url:BASE,icon:"users",colors:["#0A84FF","#E6F1FF","#CFE4FF"]},
+ {id:"homevisit",name:"เยี่ยมบ้าน",desc:"บันทึกข้อมูลและติดตามการเยี่ยมบ้านนักเรียน",category:"student",group:"student",tag:"ดูแลช่วยเหลือ",url:BASE+"?page=HomeVisit",icon:"home",colors:["#FF6B2C","#FFEDE3","#FFD9C4"]},
+ {id:"curriculum",name:"หลักสูตรสถานศึกษา",desc:"เข้าถึงข้อมูลและงานหลักสูตรสถานศึกษา",category:"academic",group:"academic",tag:"งานวิชาการ",url:BASE+"?page=curriculum",icon:"book",colors:["#8B5CF6","#F0EAFF","#DFD3FF"]},
+ {id:"gradeentry",name:"ระบบลงคะแนน",desc:"บันทึกคะแนนและผลการเรียนรายวิชา",category:"academic",group:"academic",tag:"ลงคะแนน",url:BASE+"?page=gradeentry",icon:"edit",colors:["#F0284A","#FFE8EC","#FFCBD4"]},
+ {id:"grade5",name:"ผล ปพ.5",desc:"ตรวจดูผลและข้อมูลรายงาน ปพ.5",category:"academic",group:"academic",tag:"รายงานผล",url:BASE+"?page=report_grade",icon:"chart",colors:["#00B3E6","#DFF6FD","#BDEBF9"]},
+ {id:"individual",name:"กรอก ปพ.6",desc:"กรอกข้อมูลผลการเรียนรายบุคคล",category:"academic",group:"academic",tag:"กรอกข้อมูล",url:BASE+"?page=individual",icon:"file",colors:["#E02CC0","#FDE7F8","#F9CBF0"]},
+ {id:"reportindi",name:"ผล ปพ.6",desc:"ดูรายงานผลการเรียนรายบุคคล",category:"academic",group:"academic",tag:"รายงานผล",url:BASE+"?page=report_indi",icon:"filecheck",colors:["#F5A200","#FFF3D6","#FFE4A3"]},
+ {id:"kindergarten",name:"กรอก อบ.",desc:"กรอกข้อมูลประเมินพัฒนาการเด็กปฐมวัย",category:"academic",group:"academic",tag:"ปฐมวัย",url:BASE+"?page=kindergarten",icon:"blocks",colors:["#16B364","#E0F8EB","#BFEED4"]},
+ {id:"reportkind",name:"ผล อบ.",desc:"ตรวจดูผลการประเมินเด็กปฐมวัย",category:"academic",group:"academic",tag:"รายงานผล",url:BASE+"?page=report_kind",icon:"clipboard",colors:["#FF8A00","#FFEFD9","#FFDBAE"]},
+ {id:"kinderbook",name:"เล่ม อบ.",desc:"จัดการและเข้าถึงเล่มรายงาน อบ.",category:"academic",group:"academic",tag:"เอกสารปฐมวัย",url:BASE+"?page=kinderbook",icon:"bookcheck",colors:["#3D5AFE","#E6EAFF","#CBD3FF"]},
+ {id:"janitor",name:"ระบบภารโรง",desc:"แจ้งงานและติดตามงานอาคารสถานที่",category:"operations",group:"operations",tag:"อาคารสถานที่",url:"https://lermintech-cloud.github.io/SATID/",icon:"wrench",colors:["#E5B800","#FFF8D6","#FFEB99"]},
+ {id:"calendar",name:"ปฏิทินวิชาการ",desc:"ดูปฏิทินและกิจกรรมสำคัญของโรงเรียน",category:"operations",group:"operations",tag:"ปฏิทิน",url:"https://lermintech-cloud.github.io/school-smart-miniapp/",icon:"calendar",colors:["#00BFA5","#DCF9F4","#B5F0E6"]},
+ {id:"leave",name:"ระบบลา",desc:"เข้าสู่ระบบจัดการการลาของบุคลากร",category:"operations",group:"operations",tag:"งานบุคลากร",url:"https://script.google.com/macros/s/AKfycbzs09_lWx4swr4Zy_r1QTFGsjiwWIPmLujKLoXlRrriPuOxOiSHGmMaml8azHi1FmAE/exec",icon:"calendarcheck",colors:["#FF3D81","#FFE6EF","#FFC8DC"]}
 ];
 const iconPaths={
+ edit:'<path d="M4 20h4.5L20 8.5 15.5 4 4 15.5z"/><path d="m13 6.5 4.5 4.5M12 20h8"/>',
  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20v-1.5a5.5 5.5 0 0 1 11 0V20"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.7M17 14a5 5 0 0 1 4 4.8V20"/>',
  home:'<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>',
  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 4.5v17M8 6h8M8 10h7"/>',
@@ -43,9 +45,14 @@ function renderCards(){
   c.querySelector(".favorite-btn").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();const fav=getFavorites();const i=fav.indexOf(s.id);if(i>=0)fav.splice(i,1);else fav.push(s.id);saveFavorites(fav);applyFilters();showToast(i>=0?"นำออกจากรายการโปรดแล้ว":"เพิ่มในรายการโปรดแล้ว")});
   grids[s.group].appendChild(c);
  });
- updateFavoriteButtons();applyFilters();
+ updateCounts();updateFavoriteButtons();applyFilters();
 }
 function updateFavoriteButtons(){const fav=getFavorites();document.querySelectorAll(".system-card").forEach(card=>{const b=card.querySelector(".favorite-btn"),yes=fav.includes(card.dataset.id);b.classList.toggle("is-favorite",yes);b.textContent=yes?"★":"☆";b.setAttribute("aria-pressed",String(yes));b.setAttribute("aria-label",yes?"นำออกจากรายการโปรด":"เพิ่มในรายการโปรด")})}
+function updateCounts(){
+ const total=systems.length;
+ const chip=document.querySelector('.filter-chip[data-filter="all"] span');if(chip)chip.textContent=total;
+ Object.entries(grids).forEach(([key,grid])=>{const n=systems.filter(s=>s.group===key).length;const el=grid.previousElementSibling.querySelector('.category-count');if(el)el.textContent=String(n).padStart(2,'0')+' ระบบ'});
+}
 function applyFilters(){
  const q=searchInput.value.trim().toLocaleLowerCase("th");let visible=0;
  document.querySelectorAll(".system-card").forEach(card=>{const s=systems.find(x=>x.id===card.dataset.id);const matchesText=!q||(s.name+" "+s.desc+" "+s.tag).toLocaleLowerCase("th").includes(q);const matchesFilter=activeFilter==="all"||(activeFilter==="favorite"?getFavorites().includes(s.id):s.group===activeFilter);const show=matchesText&&matchesFilter;card.hidden=!show;if(show)visible++});
