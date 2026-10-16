@@ -78,6 +78,9 @@ function normalize(list){
 }
 
 /* ===== สถานะข้อมูล (ออนไลน์) ===== */
+const CACHE_KEY = "banrai-hub-systems-cache-v1";   // แคชไว้แสดงผลเร็วเท่านั้น ไม่ใช่ที่เก็บข้อมูลจริง
+function readCache(){ try{ const c = JSON.parse(localStorage.getItem(CACHE_KEY)); const l = c && normalize(c.systems); return l && l.length ? {systems:l, version:c.version||null} : null; }catch{ return null; } }
+function writeCache(list, ver){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({systems:list, version:ver})); }catch{} }
 let systems = [], sysVersion = null, source = "default", lastLoad = 0;
 let activeFilter = "all", deferredPrompt = null;
 
@@ -89,11 +92,11 @@ async function fetchJson(url, opts, ms){
 async function loadSystems(silent){
  if(!API){ systems = clone(DEFAULT_SYSTEMS); source = "default"; return; }
  try{
-  const j = await fetchJson(API + "?action=list&_=" + Date.now(), {}, 9000);
+  const j = await fetchJson(API + "?action=list&_=" + Date.now(), {}, 7000);
   if(!j || !j.ok) throw new Error("bad");
   const list = normalize(j.systems);
   sysVersion = j.version || null;
-  if(list.length){ systems = list; source = "online"; }
+  if(list.length){ systems = list; source = "online"; writeCache(list, sysVersion); }
   else { systems = clone(DEFAULT_SYSTEMS); source = "empty"; }
  }catch(e){
   if(!silent || !systems.length){ systems = clone(DEFAULT_SYSTEMS); source = "offline"; }
@@ -258,7 +261,7 @@ $("saveOnlineBtn").addEventListener("click", async () => {
  const btn = $("saveOnlineBtn"); btn.dataset.label = "บันทึกขึ้นออนไลน์"; setBusy(btn,true,"กำลังบันทึก...");
  const r = await apiPost({action:"save", password:admin.pass, systems:admin.draft, baseVersion:sysVersion});
  if(r.ok){
-  systems = normalize(r.systems); sysVersion = r.version || null; source = "online"; admin.draft = clone(systems); admin.dirty = false;
+  systems = normalize(r.systems); sysVersion = r.version || null; source = "online"; writeCache(systems, sysVersion); admin.draft = clone(systems); admin.dirty = false;
   renderCards(); renderManager(); showToast("บันทึกขึ้นออนไลน์เรียบร้อยแล้ว ✓");
  }else if(r.error === "version_conflict"){
   setBusy(btn,false,"");
@@ -333,15 +336,27 @@ $("searchFab").addEventListener("click", () => { searchInput.focus(); window.scr
 $("settingsNav").addEventListener("click", openSettings);
 $("settingsBtn").addEventListener("click", openSettings);
 document.addEventListener("visibilitychange", async () => {
- if(document.visibilityState === "visible" && API && !dlg.open && Date.now() - lastLoad > 60000){ await loadSystems(true); renderCards(); }
+ if(document.visibilityState === "visible" && API && !dlg.open && Date.now() - lastLoad > 60000) await refreshSystems();
 });
 
 if("serviceWorker" in navigator && location.protocol !== "file:"){ window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {})); }
 
+async function refreshSystems(){
+ const before = JSON.stringify(systems);
+ await loadSystems(true);
+ if(JSON.stringify(systems) !== before) renderCards();
+}
+
 /* ===== เริ่มทำงาน ===== */
 buildPickers();
-showSkeleton();
-loadSystems(false).then(() => {
- renderCards();
- if(source === "offline") showToast("เชื่อมต่อออนไลน์ไม่ได้ แสดงรายการเริ่มต้นแทน");
-});
+const cached = API ? readCache() : null;
+if(cached){            // มีของเดิม: แสดงทันที แล้วอัปเดตจากออนไลน์เงียบๆ ข้างหลัง
+ systems = cached.systems; sysVersion = cached.version; source = "cache"; renderCards();
+ refreshSystems();
+}else{                 // เปิดครั้งแรก: โชว์โครงกระดูกระหว่างรอ
+ showSkeleton();
+ loadSystems(false).then(() => {
+  renderCards();
+  if(source === "offline") showToast("เชื่อมต่อออนไลน์ไม่ได้ แสดงรายการเริ่มต้นแทน");
+ });
+}
