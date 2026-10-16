@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102f50">
+  <meta name="description" content="ศูนย์รวมระบบงานโรงเรียนบ้านไร่ เข้าถึงระบบงานได้สะดวกในที่เดียว">
+  <title>Ban Rai School Hub | ศูนย์รวมระบบงานโรงเรียนบ้านไร่</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <main class="app-shell">
+    <header class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M5 20 24 7l19 13v21H5z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M15 41V25h18v16M20 25v-6h8v6M21 32h6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg></div>
+          <div><div class="brand-name">BAN RAI <span>SCHOOL</span></div><div class="brand-sub">SMART SCHOOL HUB</div></div>
+        </div>
+        <button class="install-btn" id="installBtn" hidden><span class="install-icon">↓</span><span>ติดตั้งแอป</span></button>
+      </div>
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> SCHOOL DIGITAL WORKSPACE</div>
+        <h1>ทุกระบบงาน<br><span>ในที่เดียว</span></h1>
+        <p>ศูนย์รวมทางลัดสำหรับครูและบุคลากรโรงเรียนบ้านไร่<br class="desktop-break"> เปิดใช้งานง่าย ครบทุกอุปกรณ์</p>
+        <div class="hero-pills"><span>✦ ใช้งานสะดวก</span><span>◈ Mobile friendly</span><span>↗ เข้าระบบได้ทันที</span></div>
+      </div>
+      <div class="hero-orb orb-a"></div><div class="hero-orb orb-b"></div><div class="hero-grid"></div>
+    </header>
+
+    <section class="welcome-row">
+      <div><p class="section-kicker">YOUR WORKSPACE</p><h2>ระบบงานของโรงเรียน</h2><p class="section-desc">เลือกเมนูที่ต้องการ หรือค้นหาจากชื่อระบบ</p></div>
+      <div class="total-badge"><span class="total-number" id="totalCount">12</span><span>ระบบงาน</span></div>
+    </section>
+
+    <section class="search-panel" aria-label="ค้นหาระบบ">
+      <span class="search-symbol" aria-hidden="true">⌕</span>
+      <input id="searchInput" type="search" placeholder="ค้นหาระบบ เช่น ปพ.6, เยี่ยมบ้าน, ระบบลา..." autocomplete="off">
+      <button id="clearSearch" class="clear-search" aria-label="ล้างคำค้น" hidden>×</button>
+      <kbd>ค้นหา</kbd>
+    </section>
+
+    <nav class="filter-row" aria-label="กรองหมวดหมู่">
+      <button class="filter-chip active" data-filter="all">ทั้งหมด <span>12</span></button>
+      <button class="filter-chip" data-filter="student">นักเรียน</button>
+      <button class="filter-chip" data-filter="academic">วิชาการ</button>
+      <button class="filter-chip" data-filter="operations">งานทั่วไป</button>
+      <button class="filter-chip" data-filter="favorite">★ รายการโปรด</button>
+    </nav>
+
+    <section class="systems-section">
+      <div class="category-heading"><div><span class="category-marker marker-blue"></span><h3>งานนักเรียนและดูแลช่วยเหลือ</h3></div><span class="category-count">02 ระบบ</span></div>
+      <div class="card-grid" id="studentGrid"></div>
+
+      <div class="category-heading"><div><span class="category-marker marker-purple"></span><h3>งานวิชาการและประเมินผล</h3></div><span class="category-count">07 ระบบ</span></div>
+      <div class="card-grid" id="academicGrid"></div>
+
+      <div class="category-heading"><div><span class="category-marker marker-teal"></span><h3>ระบบสนับสนุนการทำงาน</h3></div><span class="category-count">03 ระบบ</span></div>
+      <div class="card-grid" id="operationsGrid"></div>
+
+      <div id="emptyState" class="empty-state" hidden><div class="empty-icon">⌕</div><h3>ไม่พบระบบที่ค้นหา</h3><p>ลองใช้คำค้นอื่น หรือเลือกหมวดหมู่ “ทั้งหมด”</p><button id="resetFilters">แสดงระบบทั้งหมด</button></div>
+    </section>
+
+    <section class="install-banner" id="installBanner">
+      <div class="install-art"><span class="art-spark">✦</span><span class="art-phone">▯</span><span class="art-check">✓</span></div>
+      <div class="install-copy"><h3>พร้อมใช้งานทุกที่</h3><p>เพิ่ม School Hub ไว้บนหน้าจอหลัก เพื่อเปิดระบบงานได้รวดเร็วเหมือนแอป</p></div>
+      <button id="installBannerBtn" class="banner-button">วิธีติดตั้ง <span>→</span></button>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-brand"><span class="footer-mark">BR</span><div><strong>โรงเรียนบ้านไร่</strong><small>BAN RAI SCHOOL HUB</small></div></div>
+      <p>ศูนย์รวมทางลัดระบบงานดิจิทัลเพื่อการทำงานที่สะดวกขึ้น</p>
+      <span class="footer-note">Designed for every screen · PWA ready</span>
+    </footer>
+  </main>
+
+  <nav class="bottom-nav" aria-label="เมนูลัด">
+    <a href="#top" id="homeNav" class="bottom-item selected"><span class="nav-icon">⌂</span><span>หน้าหลัก</span></a>
+    <button class="bottom-item" id="favoritesNav"><span class="nav-icon">☆</span><span>รายการโปรด</span></button>
+    <button class="bottom-fab" id="searchFab" aria-label="ค้นหาระบบ"><span>⌕</span></button>
+    <button class="bottom-item" id="installNav"><span class="nav-icon">↓</span><span>ติดตั้งแอป</span></button>
+    <a href="#footer" id="infoNav" class="bottom-item"><span class="nav-icon">ⓘ</span><span>เกี่ยวกับ</span></a>
+  </nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="installDialog" class="install-dialog">
+    <form method="dialog"><button class="dialog-close" aria-label="ปิด">×</button></form>
+    <div class="dialog-icon">↗</div><p class="section-kicker">INSTALL SCHOOL HUB</p><h2>เพิ่มไว้บนหน้าจอหลัก</h2>
+    <div class="install-instructions">
+      <div><span>01</span><p><strong>Android / Chrome</strong><br>กดเมนู ⋮ ของเบราว์เซอร์ แล้วเลือก “ติดตั้งแอป” หรือ “เพิ่มลงในหน้าจอหลัก”</p></div>
+      <div><span>02</span><p><strong>iPhone / iPad</strong><br>เปิดด้วย Safari กดปุ่มแชร์ แล้วเลือก “เพิ่มไปยังหน้าจอโฮม”</p></div>
+      <div><span>03</span><p><strong>คอมพิวเตอร์</strong><br>ใช้ Chrome หรือ Edge แล้วเลือกไอคอนติดตั้งที่แถบที่อยู่ หากเบราว์เซอร์รองรับ</p></div>
+    </div>
+    <p class="dialog-note">ต้องเปิดเว็บผ่าน HTTPS และติดตั้งไฟล์ PWA บนโฮสต์ก่อน เมนูอาจแตกต่างกันตามอุปกรณ์</p>
+    <button class="dialog-done" id="dialogDone">เข้าใจแล้ว</button>
+  </dialog>
+  <script src="./app.js"></script>
+</body>
+</html>
