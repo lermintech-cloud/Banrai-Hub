@@ -38,8 +38,8 @@ function saveFavorites(ids){try{localStorage.setItem(favoritesKey,JSON.stringify
 function svgIcon(name){return `<svg viewBox="0 0 24 24" aria-hidden="true">${iconPaths[name]||iconPaths.file}</svg>`}
 function renderCards(){
  Object.values(grids).forEach(g=>g.innerHTML="");
- systems.forEach(s=>{
-  const c=document.createElement("a");c.className="system-card";c.href=s.url;c.target="_blank";c.rel="noopener noreferrer";c.dataset.id=s.id;c.dataset.group=s.group;
+ systems.forEach((s,idx)=>{
+  const c=document.createElement("a");c.className="system-card";c.href=s.url;c.target="_blank";c.rel="noopener noreferrer";c.dataset.id=s.id;c.dataset.group=s.group;c.style.setProperty("--i",Math.min(idx,10));
   c.style.setProperty("--accent",s.colors[0]);c.style.setProperty("--tint",s.colors[1]);c.style.setProperty("--edge",s.colors[2]);
   c.innerHTML=`<div class="card-head"><span class="card-icon">${svgIcon(s.icon)}</span><button type="button" class="favorite-btn" aria-label="เพิ่ม ${s.name} ในรายการโปรด" title="รายการโปรด">☆</button></div><h4 class="card-title">${s.name}</h4><p class="card-description">${s.desc}</p><div class="card-footer"><span class="card-tag">${s.tag}</span><span class="card-open" aria-hidden="true">↗</span></div>`;
   c.querySelector(".favorite-btn").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();const fav=getFavorites();const i=fav.indexOf(s.id);if(i>=0)fav.splice(i,1);else fav.push(s.id);saveFavorites(fav);applyFilters();showToast(i>=0?"นำออกจากรายการโปรดแล้ว":"เพิ่มในรายการโปรดแล้ว")});
@@ -57,9 +57,15 @@ function applyFilters(){
  const q=searchInput.value.trim().toLocaleLowerCase("th");let visible=0;
  document.querySelectorAll(".system-card").forEach(card=>{const s=systems.find(x=>x.id===card.dataset.id);const matchesText=!q||(s.name+" "+s.desc+" "+s.tag).toLocaleLowerCase("th").includes(q);const matchesFilter=activeFilter==="all"||(activeFilter==="favorite"?getFavorites().includes(s.id):s.group===activeFilter);const show=matchesText&&matchesFilter;card.hidden=!show;if(show)visible++});
  Object.entries(grids).forEach(([key,grid])=>{const heading=grid.previousElementSibling;const has=[...grid.children].some(c=>!c.hidden);heading.hidden=!has;grid.hidden=!has});
- emptyState.hidden=visible!==0;clearSearch.hidden=!searchInput.value;document.getElementById("totalCount").textContent=visible;
+ emptyState.hidden=visible!==0;clearSearch.hidden=!searchInput.value;animateNumber(document.getElementById("totalCount"),visible);
  document.querySelectorAll(".filter-chip").forEach(b=>b.classList.toggle("active",b.dataset.filter===activeFilter));
  updateFavoriteButtons();
+}
+function animateNumber(el,to){
+ const from=parseInt(el.textContent)||0;if(from===to||matchMedia("(prefers-reduced-motion: reduce)").matches){el.textContent=to;return}
+ const t0=performance.now(),d=450;cancelAnimationFrame(animateNumber.raf);
+ const step=t=>{const p=Math.min((t-t0)/d,1),e=1-Math.pow(1-p,3);el.textContent=Math.round(from+(to-from)*e);if(p<1)animateNumber.raf=requestAnimationFrame(step)};
+ animateNumber.raf=requestAnimationFrame(step);el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");
 }
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove("show"),2300)}
 function showInstallHelp(){const d=document.getElementById("installDialog");if(typeof d.showModal==="function")d.showModal();else showToast("เปิดเมนูเบราว์เซอร์ แล้วเลือกเพิ่มลงในหน้าจอหลัก")}
