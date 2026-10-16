@@ -23,7 +23,7 @@
           <img class="brand-logo" src="./icons/logo.png" alt="โลโก้โรงเรียนบ้านไร่">
           <div><div class="brand-name">BAN RAI <span>SCHOOL</span></div><div class="brand-sub">สพป.เชียงใหม่ เขต 5</div></div>
         </div>
-        <button class="install-btn" id="installBtn" hidden><span class="install-icon">↓</span><span>ติดตั้งแอป</span></button>
+        <button class="gear-btn" id="settingsBtn" type="button" aria-label="ตั้งค่า" title="ตั้งค่า"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg></button>
       </div>
       <div class="hero-copy">
         <div class="eyebrow"><span class="eyebrow-dot"></span> SCHOOL DIGITAL WORKSPACE</div>
@@ -80,16 +80,10 @@
       <div id="emptyState" class="empty-state" hidden><div class="empty-icon"><svg class="mascot m-cloud big" viewBox="0 0 48 48" aria-hidden="true"><g fill="#fff"><ellipse cx="24" cy="33" rx="18" ry="9"/><circle cx="16" cy="27" r="9"/><circle cx="29" cy="22" r="11.5"/><circle cx="38" cy="31" r="7"/></g><circle class="eye" cx="19" cy="30" r="2.1" fill="#3A2B4D"/><circle class="eye" cx="29" cy="30" r="2.1" fill="#3A2B4D"/><path d="M20.6 34.2q3.4 3.4 6.8 0" stroke="#3A2B4D" stroke-width="1.9" fill="none" stroke-linecap="round"/><circle cx="15.4" cy="33.8" r="2.5" fill="#FF8FB0" opacity=".75"/><circle cx="32.6" cy="33.8" r="2.5" fill="#FF8FB0" opacity=".75"/></svg></div><h3>ไม่พบระบบที่ค้นหา</h3><p>ลองใช้คำค้นอื่น หรือเลือกหมวดหมู่ “ทั้งหมด”</p><button id="resetFilters">แสดงระบบทั้งหมด</button></div>
     </section>
 
-    <section class="install-banner" id="installBanner">
-      <div class="install-art"><span class="art-spark">✦</span><span class="art-phone">▯</span><span class="art-check">✓</span></div>
-      <div class="install-copy"><h3>พร้อมใช้งานทุกที่</h3><p>เพิ่ม School Hub ไว้บนหน้าจอหลัก เพื่อเปิดระบบงานได้รวดเร็วเหมือนแอป</p></div>
-      <button id="installBannerBtn" class="banner-button">วิธีติดตั้ง <span>→</span></button>
-    </section>
-
     <footer class="footer">
       <div class="footer-brand"><img class="footer-logo" src="./icons/logo.png" alt=""><div><strong>โรงเรียนบ้านไร่</strong><small>BAN RAI SCHOOL HUB</small></div></div>
       <p>ศูนย์รวมทางลัดระบบงานดิจิทัลเพื่อการทำงานที่สะดวกขึ้น</p>
-      <span class="footer-note">Designed for every screen · PWA ready</span>
+      <span class="footer-note">อัปเดตปุ่มได้ที่เมนูตั้งค่า</span>
     </footer>
   </main>
 
@@ -97,10 +91,61 @@
     <a href="#top" id="homeNav" class="bottom-item selected"><span class="nav-icon">⌂</span><span>หน้าหลัก</span></a>
     <button class="bottom-item" id="favoritesNav"><span class="nav-icon">☆</span><span>รายการโปรด</span></button>
     <button class="bottom-fab" id="searchFab" aria-label="ค้นหาระบบ"><span>⌕</span></button>
-    <button class="bottom-item" id="installNav"><span class="nav-icon">↓</span><span>ติดตั้งแอป</span></button>
+    <button class="bottom-item" id="settingsNav" type="button"><span class="nav-icon">⚙</span><span>ตั้งค่า</span></button>
     <a href="#footer" id="infoNav" class="bottom-item"><span class="nav-icon">ⓘ</span><span>เกี่ยวกับ</span></a>
   </nav>
+  <button class="install-fab" id="installFab" type="button" aria-label="ติดตั้งแอป" title="ติดตั้งแอปไว้บนหน้าจอ">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="M12 7.5v6M9.3 11l2.7 2.8 2.7-2.8M10.5 18h3"/></svg>
+    <span class="fab-label">ติดตั้งแอป</span>
+  </button>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="settingsDialog" class="settings-dialog">
+    <div class="st-head"><div><p class="section-kicker">SETTINGS</p><h2 id="stTitle">ตั้งค่า</h2></div><button class="dialog-close" id="stClose" type="button" aria-label="ปิด">×</button></div>
+
+    <section id="vSetup" hidden>
+      <div class="st-card">
+        <h3>ยังไม่ได้เชื่อมต่อระบบออนไลน์</h3>
+        <p>การเพิ่ม/แก้ไข/ลบปุ่ม จะบันทึกลง Google Sheets ผ่าน Apps Script เพื่อให้ทุกเครื่องเห็นข้อมูลเดียวกัน (ไม่ได้เก็บในเครื่อง)</p>
+        <ol><li>ทำตามขั้นตอนในไฟล์ <b>apps-script/SETUP.md</b></li><li>นำ URL เว็บแอป (<code>/exec</code>) ไปใส่ใน <b>config.js</b> ที่ช่อง <code>API_URL</code></li><li>อัปโหลดขึ้น Git แล้วเปิดหน้านี้ใหม่</li></ol>
+      </div>
+      <button class="st-btn ghost" id="setupClose" type="button">ปิด</button>
+    </section>
+
+    <section id="vLogin" hidden>
+      <form id="loginForm" class="st-card" autocomplete="off">
+        <h3>เข้าสู่การจัดการปุ่ม</h3>
+        <p>สำหรับผู้ดูแลระบบเท่านั้น กรุณาใส่รหัสผ่านผู้ดูแล</p>
+        <label class="st-field"><span>รหัสผ่านผู้ดูแล</span><input type="password" id="adminPass" required autocomplete="current-password" placeholder="••••••••"></label>
+        <p class="st-error" id="loginError" hidden></p>
+        <button class="st-btn primary" id="loginBtn" type="submit">เข้าสู่ระบบจัดการ</button>
+      </form>
+    </section>
+
+    <section id="vList" hidden>
+      <div class="st-notice" id="stNotice" hidden>ยังไม่มีข้อมูลออนไลน์ — กด “บันทึกขึ้นออนไลน์” ครั้งแรกเพื่อส่งรายการเริ่มต้นขึ้นชีต จากนั้นแก้ไขได้ตามต้องการ</div>
+      <div class="st-toolbar"><button class="st-btn primary" id="addBtn" type="button">＋ เพิ่มปุ่มใหม่</button><button class="st-btn ghost" id="resetDefaultsBtn" type="button">รีเซ็ตเป็นค่าเริ่มต้น</button></div>
+      <div id="mgList"></div>
+      <div class="st-savebar"><span id="dirtyNote"></span><button class="st-btn primary" id="saveOnlineBtn" type="button" disabled>บันทึกขึ้นออนไลน์</button></div>
+    </section>
+
+    <section id="vForm" hidden>
+      <form id="itemForm" autocomplete="off">
+        <div class="form-preview"><span class="form-hint">ตัวอย่างที่จะแสดง</span><div class="system-card preview" id="itemPreview"></div></div>
+        <label class="st-field"><span>ชื่อปุ่ม *</span><input id="fName" maxlength="60" required placeholder="เช่น ระบบลงคะแนน"></label>
+        <label class="st-field"><span>คำอธิบายสั้นๆ</span><input id="fDesc" maxlength="120" placeholder="เช่น บันทึกคะแนนและผลการเรียน"></label>
+        <label class="st-field"><span>ลิงก์ปลายทาง *</span><input id="fUrl" type="url" required placeholder="https://..." inputmode="url"></label>
+        <div class="st-row2">
+          <label class="st-field"><span>หมวดหมู่</span><select id="fGroup"><option value="student">งานนักเรียนและดูแลช่วยเหลือ</option><option value="academic">งานวิชาการและประเมินผล</option><option value="operations">ระบบสนับสนุนการทำงาน</option></select></label>
+          <label class="st-field"><span>ป้ายกำกับ</span><input id="fTag" maxlength="30" placeholder="เช่น รายงานผล"></label>
+        </div>
+        <div class="st-field"><span>ไอคอน</span><div class="icon-picker" id="iconPicker"></div></div>
+        <div class="st-field"><span>สี</span><div class="color-picker"><div id="colorPicker"></div><label class="color-custom" title="เลือกสีเอง"><input type="color" id="fColorCustom" value="#8B5CF6"><i>เลือกเอง</i></label></div></div>
+        <p class="st-error" id="formError" hidden></p>
+        <div class="st-actions"><button class="st-btn ghost" id="fCancel" type="button">ยกเลิก</button><button class="st-btn primary" type="submit">ตกลง</button></div>
+      </form>
+    </section>
+  </dialog>
 
   <dialog id="installDialog" class="install-dialog">
     <form method="dialog"><button class="dialog-close" aria-label="ปิด">×</button></form>
@@ -113,6 +158,7 @@
     <p class="dialog-note">ต้องเปิดเว็บผ่าน HTTPS และติดตั้งไฟล์ PWA บนโฮสต์ก่อน เมนูอาจแตกต่างกันตามอุปกรณ์</p>
     <button class="dialog-done" id="dialogDone">เข้าใจแล้ว</button>
   </dialog>
+  <script src="./config.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
