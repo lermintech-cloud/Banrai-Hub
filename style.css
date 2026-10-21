@@ -367,3 +367,103 @@ body{background-color:#f5efff;background-image:radial-gradient(ellipse at 5% 8%,
 @media(max-width:760px){.hero{padding-bottom:86px}.hero-copy{padding-right:80px}.hero h1{font-size:28px}.mascot-trio{right:58px;bottom:0;width:195px;height:86px;transform:scale(.72);transform-origin:bottom right}.chibi-child{width:100px;height:120px}.chibi-cat,.chibi-dog{width:86px;height:95px}.hero-icecream{width:54px;right:12px;bottom:40px}.hero-star{right:76px;bottom:66px;width:22px;height:22px}.brand-logo{filter:drop-shadow(0 4px 8px rgba(60,40,140,.2))}}
 @media(max-width:390px){.hero-copy{padding-right:65px}.hero h1{font-size:25px}.mascot-trio{right:43px;transform:scale(.62);bottom:0}.hero-icecream{width:46px;right:7px;bottom:42px}.hero-star{right:55px;bottom:68px}}
 @media(prefers-reduced-motion:reduce){.chibi,.mascot-spark,.hero-icecream,.hero-grid{animation:none!important}.system-card:before{transition:none!important}}
+
+/* =========================================================
+   BAN RAI SCHOOL HUB — PREMIUM DIGITAL BANKING INSPIRED THEME
+   Original school identity; inspired by clean mobile-banking UX,
+   not a copy of any bank's branding or interface.
+   ========================================================= */
+:root{
+  --ink:#102A43;--ink2:#36556F;--muted:#627D98;
+  --violet:#1677D2;--pink:#62D8E8;--sky:#8BD7FF;--bg:#F2F7FC;
+  --shadow:0 12px 30px rgba(20,67,112,.09);
+}
+body{
+  color:#102A43;
+  background:radial-gradient(ellipse at 5% 0%,rgba(89,190,255,.13),transparent 35%),
+             radial-gradient(ellipse at 95% 15%,rgba(96,226,218,.12),transparent 30%),
+             #F2F7FC;
+  background-attachment:fixed;
+}
+.hero{
+  color:#fff;
+  background:linear-gradient(128deg,#063B78 0%,#075AA7 48%,#087FAD 100%);
+  border-radius:0 0 30px 30px;
+  box-shadow:0 18px 42px rgba(5,61,115,.23);
+}
+.hero:before{background:radial-gradient(circle,rgba(91,218,255,.24),rgba(91,218,255,0) 68%)}
+.hero:after{background:radial-gradient(circle,rgba(255,255,255,.12),rgba(255,255,255,0) 70%)}
+.hero-grid{
+  opacity:.55;
+  background:radial-gradient(circle 2px at 14% 36%,#fff 96%,transparent),
+             radial-gradient(circle 2px at 38% 22%,#8CE8FF 96%,transparent),
+             radial-gradient(circle 2px at 58% 70%,#fff 96%,transparent),
+             radial-gradient(circle 2px at 74% 28%,#8CE8FF 96%,transparent),
+             radial-gradient(circle 2px at 90% 62%,#fff 96%,transparent);
+}
+.brand-name,.brand-sub{color:#fff}
+.brand-name span{color:#A6F2FF}
+.brand-logo{filter:drop-shadow(0 5px 12px rgba(0,0,0,.22))}
+.gear-btn{color:#fff!important;background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.26)!important;backdrop-filter:blur(14px)}
+.eyebrow{color:#DDF7FF;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(12px)}
+.eyebrow-dot{background:#76F0D0;box-shadow:0 0 12px rgba(118,240,208,.75)}
+.hero h1{color:#fff;text-shadow:0 3px 16px rgba(0,20,50,.16)}
+.hero h1 span{color:#9EF0F0;text-shadow:0 2px 0 rgba(0,37,84,.28),0 5px 14px rgba(0,20,50,.22)}
+.hero-copy p{color:#D5EBFA}
+.hero-icecream{filter:drop-shadow(0 9px 15px rgba(0,18,48,.32))}
+.search-panel{
+  border:1px solid #E0EAF3;border-radius:18px;height:58px;margin-top:-25px;
+  background:rgba(255,255,255,.97);box-shadow:0 14px 34px rgba(17,69,112,.12),inset 0 1px 0 #fff;
+}
+.search-panel:focus-within{box-shadow:0 0 0 4px rgba(22,119,210,.12),0 14px 34px rgba(17,69,112,.14)}
+.search-symbol{color:#0877BD}
+.search-panel input{color:#102A43}
+.search-panel kbd{background:linear-gradient(135deg,#0877C9,#0B9EB5);border-radius:11px}
+.clear-search{background:#EAF4FB;color:#36556F}
+.section-kicker{color:#0877BD;letter-spacing:1.5px}
+.welcome-row h2,.category-heading h3,.footer-brand strong{color:#123B5D;text-shadow:none}
+.section-desc{color:#627D98}
+.total-badge{background:#fff;border:1px solid #E1EBF4;box-shadow:0 8px 22px rgba(17,69,112,.07);color:#36556F}
+.total-number{background:linear-gradient(135deg,#0877C9,#11A8B5);box-shadow:0 5px 13px rgba(8,119,189,.22);font-family:'Noto Sans Thai',sans-serif}
+.filter-row{gap:8px}
+.filter-chip{border:1px solid #E0EAF3;background:rgba(255,255,255,.92);color:#486581;box-shadow:0 4px 12px rgba(17,69,112,.05);border-radius:13px}
+.filter-chip.active{background:linear-gradient(135deg,#075AA7,#0B9EB5);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(8,100,164,.2);animation:none}
+.category-marker{border-radius:16px;background:linear-gradient(145deg,#fff,#EAF6FC);border:1px solid #DCEAF4;box-shadow:0 6px 15px rgba(17,69,112,.07)}
+.category-count{background:#E8F5FB;color:#0877BD;box-shadow:none}
+.card-grid{gap:14px}
+.system-card{
+  border:1px solid #E0EAF3;border-radius:22px;
+  background:linear-gradient(150deg,#fff 0%,#F7FBFE 100%);
+  box-shadow:inset 0 1px 0 #fff,0 8px 22px rgba(17,69,112,.065);
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.system-card:before{background:radial-gradient(ellipse at 80% 0%,rgba(255,255,255,.98),transparent 40%),linear-gradient(120deg,transparent 30%,rgba(111,221,235,.12) 48%,transparent 62%)}
+.system-card:after{background:#7ADDDC;box-shadow:0 0 0 4px rgba(122,221,220,.14),0 0 12px rgba(122,221,220,.3)}
+.system-card:hover{transform:translateY(-4px);border-color:#B9DFEF;box-shadow:inset 0 1px 0 #fff,0 16px 30px rgba(17,69,112,.12)}
+.system-card:active{transform:scale(.985);box-shadow:inset 0 2px 6px rgba(17,69,112,.06),0 4px 12px rgba(17,69,112,.07)}
+.card-icon{border:1px solid #DCECF5;background:linear-gradient(145deg,#F4FBFF,#DFF3FA);box-shadow:inset 0 1px 0 #fff,0 5px 12px rgba(17,119,189,.09)}
+.card-title{color:#123B5D;text-shadow:none}
+.card-description{color:#627D98}
+.card-tag{border:1px solid #DFEDF5;background:#F4FAFD;color:#36708E;box-shadow:none}
+.favorite-btn{border:1px solid #DFEAF3;background:#fff;box-shadow:0 3px 8px rgba(17,69,112,.06)}
+.bottom-nav{
+  background:rgba(255,255,255,.94)!important;border:1px solid rgba(218,233,244,.95)!important;
+  box-shadow:0 14px 38px rgba(10,57,99,.16),inset 0 1px 0 #fff!important;
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+}
+.bottom-item{color:#6B8296!important}
+.bottom-item.selected{color:#0877BD!important}
+.bottom-fab,.install-fab,.dialog-done,.st-btn.primary{background:linear-gradient(135deg,#075AA7,#0B9EB5);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 18px rgba(8,100,164,.23)}
+.install-btn{color:#075AA7;background:#fff;box-shadow:0 6px 16px rgba(0,25,65,.18)}
+.footer{border-top:1px solid #DCE8F1}
+.settings-dialog,.install-dialog{border:1px solid #DCE8F1;box-shadow:0 30px 80px rgba(7,48,88,.28)}
+.settings-dialog::backdrop,.install-dialog::backdrop{background:rgba(4,31,59,.48);backdrop-filter:blur(7px)}
+.dialog-close{background:#EDF5FA;color:#36556F}
+@media(max-width:760px){
+  .hero{padding-bottom:86px}
+  .system-card{min-height:190px;border-radius:20px}
+  .search-panel{border-radius:17px}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero:before,.hero:after,.hero-grid,.brand-logo,.install-icon,.eyebrow-dot,.system-card,.system-card:before{animation:none!important;transition:none!important}
+}
