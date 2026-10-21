@@ -284,3 +284,42 @@ body{margin:0;min-height:100vh;font-family:'Noto Sans Thai',sans-serif;padding:0
  .mg-act button{width:32px;height:32px}
 }
 @media(prefers-reduced-motion:reduce){.install-fab,.install-fab:before,.skeleton-card:after{animation:none!important}}
+
+/* ===== FLUFFY PLUSH THEME (ปุ่มนูนขนปุย) ===== */
+:root{
+  --fur-cream:#FFF6F1;--fur-pink:#F9D3DE;--fur-shade:rgba(222,140,165,.38);
+  --fur-noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.1 -.38'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.system-card{
+  background:
+    radial-gradient(120% 90% at 20% 8%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 55%),
+    linear-gradient(160deg,color-mix(in srgb,var(--accent) 10%,var(--fur-cream)) 0%,color-mix(in srgb,var(--accent) 30%,var(--fur-pink)) 100%);
+  border:0;border-radius:30px;
+  box-shadow:
+    inset 5px 6px 12px rgba(255,255,255,.95),
+    inset -7px -9px 16px color-mix(in srgb,var(--accent) 32%,transparent),
+    0 12px 22px color-mix(in srgb,var(--accent) 28%,transparent),
+    0 2px 0 rgba(255,255,255,.6);
+}
+.system-card:before{inset:0;right:auto;top:auto;width:auto;height:auto;border-radius:inherit;background:var(--fur-noise);opacity:.55;mix-blend-mode:soft-light;pointer-events:none;transform:none!important}
+.system-card:after{inset:0;left:auto;bottom:auto;width:auto;height:auto;border-radius:inherit;background:radial-gradient(90% 60% at 30% 0%,rgba(255,255,255,.55),transparent 60%);pointer-events:none}
+.system-card:hover{transform:translateY(-5px) scale(1.015) rotate(-.4deg);
+  box-shadow:inset 5px 6px 12px rgba(255,255,255,.95),inset -7px -9px 16px color-mix(in srgb,var(--accent) 32%,transparent),0 18px 30px color-mix(in srgb,var(--accent) 38%,transparent)}
+.system-card:active{transform:scale(.96);
+  box-shadow:inset 6px 8px 14px color-mix(in srgb,var(--accent) 30%,transparent),inset -4px -4px 10px rgba(255,255,255,.9),0 4px 10px color-mix(in srgb,var(--accent) 24%,transparent)}
+
+/* ไอคอน: พื้นหลังขนฟุ้ง (ฟิลเตอร์ใช้เฉพาะเลเยอร์พื้น ตัวไอคอนคมชัด) */
+.card-icon{position:relative;isolation:isolate;background:transparent;box-shadow:none;color:color-mix(in srgb,var(--accent) 85%,#7a2a48)}
+.card-icon:before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;filter:url(#fur);
+  background:radial-gradient(circle at 30% 25%,#fff 0%,var(--fur-cream) 60%,var(--fur-pink) 100%);
+  box-shadow:inset 3px 3px 8px rgba(255,255,255,.95),inset -4px -5px 9px var(--fur-shade),0 7px 12px color-mix(in srgb,var(--accent) 28%,transparent)}
+.card-icon svg{filter:drop-shadow(0 1.5px 0 rgba(255,255,255,.9)) drop-shadow(0 2px 2px color-mix(in srgb,var(--accent) 35%,transparent));stroke-width:2.2}
+
+/* ปุ่มเล็กอื่นๆ ให้เข้าธีม */
+.card-tag{background:var(--fur-cream);box-shadow:inset 2px 2px 5px #fff,inset -2px -3px 5px var(--fur-shade)}
+.card-open{box-shadow:inset 2px 2px 5px rgba(255,255,255,.55),inset -2px -3px 6px rgba(0,0,0,.18),0 6px 10px color-mix(in srgb,var(--accent) 40%,transparent)}
+.favorite-btn{background:var(--fur-cream);box-shadow:inset 2px 2px 5px #fff,inset -2px -3px 6px var(--fur-shade)}
+.filter-chip{background:var(--fur-cream);border:0;box-shadow:inset 3px 3px 7px #fff,inset -3px -4px 8px var(--fur-shade),0 6px 12px rgba(200,130,170,.18)}
+.filter-chip.active{box-shadow:inset 3px 3px 7px rgba(255,255,255,.45),inset -3px -4px 8px rgba(80,40,160,.3),0 8px 16px rgba(138,108,255,.35)}
+.search-panel{background:var(--fur-cream);border:0;box-shadow:inset 4px 5px 10px #fff,inset -5px -6px 12px var(--fur-shade),0 12px 24px rgba(150,110,255,.2)}
+.total-badge{background:var(--fur-cream);box-shadow:inset 3px 3px 7px #fff,inset -3px -4px 8px var(--fur-shade)}
