@@ -14,16 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=fur2">
+  <link rel="stylesheet" href="./style.css?v=chibi3d1">
 </head>
 <body>
-  <!-- SVG filter สำหรับพื้นผิวขนปุย ใช้กับพื้นหลังการ์ดเท่านั้น -->
-  <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden;pointer-events:none">
-    <filter id="fluffy" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-  </svg>
 
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <main class="app-shell">
@@ -55,6 +48,43 @@
         <path d="M38 24l4 2M56 22l3-3M62 34l4 1M44 40l3 3M33 36l-1 4" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>
         <ellipse cx="37" cy="46" rx="5" ry="3" fill="#fff" opacity=".5" transform="rotate(-30 37 46)"/>
       </svg>
+      <div class="mascot-trio" aria-label="มาสคอตเด็กน้อย แมว และลูกสุนัข">
+        <svg class="chibi chibi-child" viewBox="0 0 100 120" role="img" aria-label="เด็กน้อยน่ารัก">
+          <defs><linearGradient id="kidDress" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a9"/><stop offset="1" stop-color="#ff9fcf"/></linearGradient><linearGradient id="kidSkin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe6d6"/><stop offset="1" stop-color="#f7bda8"/></linearGradient></defs>
+          <ellipse cx="51" cy="111" rx="29" ry="6" fill="#8d77c9" opacity=".18"/>
+          <path d="M28 72Q17 83 25 96L35 95 39 76M66 75Q82 76 77 93L67 98 60 80" fill="#f7c1ad" stroke="#d88f91" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M34 69Q50 61 67 70L76 100Q51 111 26 100Z" fill="url(#kidDress)" stroke="#f18cb7" stroke-width="2.5"/>
+          <path d="M36 75Q50 83 66 75M33 91Q50 98 70 91" fill="none" stroke="#fff" stroke-width="3" opacity=".85"/>
+          <path d="M32 35Q23 10 49 9Q77 8 76 36L70 55 30 54Z" fill="#79533e" stroke="#5e3c32" stroke-width="2.5"/>
+          <path d="M31 31Q17 39 29 55L37 49M69 30Q84 38 72 55L65 48" fill="#79533e"/>
+          <ellipse cx="50" cy="43" rx="23" ry="25" fill="url(#kidSkin)" stroke="#d88f91" stroke-width="2"/>
+          <path d="M28 35Q30 15 49 17Q68 15 73 34Q62 26 51 28Q39 28 28 35Z" fill="#79533e"/>
+          <ellipse cx="42" cy="44" rx="3.2" ry="4.8" fill="#49364d"/><ellipse cx="59" cy="44" rx="3.2" ry="4.8" fill="#49364d"/><circle cx="43" cy="42" r="1.2" fill="#fff"/><circle cx="60" cy="42" r="1.2" fill="#fff"/>
+          <path d="M46 53Q50 57 55 52" fill="none" stroke="#b85f77" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="35" cy="52" rx="5" ry="2.8" fill="#ff8caf" opacity=".65"/><ellipse cx="65" cy="52" rx="5" ry="2.8" fill="#ff8caf" opacity=".65"/>
+          <path d="M28 72Q17 67 16 58M70 73Q84 68 85 57" fill="none" stroke="#f7c1ad" stroke-width="8" stroke-linecap="round"/><circle cx="15" cy="56" r="6" fill="#ffe0cb"/><circle cx="86" cy="55" r="6" fill="#ffe0cb"/>
+          <path d="M40 100L37 109M61 100L65 109" stroke="#f7c1ad" stroke-width="8" stroke-linecap="round"/><path d="M29 110h12M59 110h13" stroke="#a68bff" stroke-width="7" stroke-linecap="round"/>
+          <path d="M68 16Q76 4 84 14Q80 24 69 22Z" fill="#ff86bb" stroke="#fff" stroke-width="1.5"/><circle cx="79" cy="15" r="2" fill="#fff"/>
+        </svg>
+        <svg class="chibi chibi-cat" viewBox="0 0 100 100" role="img" aria-label="แมวอ้วนสีครีม">
+          <ellipse cx="51" cy="91" rx="29" ry="5" fill="#8d77c9" opacity=".18"/><path d="M28 34L22 10Q21 6 27 11L43 24M59 24L76 10Q81 7 78 17L74 37" fill="#fff0cf" stroke="#d5a9a0" stroke-width="2.5" stroke-linejoin="round"/>
+          <ellipse cx="51" cy="54" rx="31" ry="30" fill="#fff1d8" stroke="#d5a9a0" stroke-width="2.5"/><path d="M28 34Q36 25 47 27L39 36Q33 39 28 34M61 27Q72 25 76 35Q69 39 61 36Z" fill="#f4b6c8"/>
+          <ellipse cx="41" cy="51" rx="3.5" ry="5" fill="#49364d"/><ellipse cx="61" cy="51" rx="3.5" ry="5" fill="#49364d"/><circle cx="42" cy="49" r="1.3" fill="#fff"/><circle cx="62" cy="49" r="1.3" fill="#fff"/>
+          <path d="M48 59Q51 63 54 59L51 57Z" fill="#ed8ca7"/><path d="M51 61Q46 68 41 63M51 61Q56 68 61 63" fill="none" stroke="#9b6978" stroke-width="1.8" stroke-linecap="round"/>
+          <ellipse cx="32" cy="60" rx="5" ry="3" fill="#ff9eb8" opacity=".7"/><ellipse cx="70" cy="60" rx="5" ry="3" fill="#ff9eb8" opacity=".7"/>
+          <path d="M26 60L13 57M27 65L13 67M75 60L88 57M75 65L88 67" stroke="#b99c91" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M27 76Q18 87 30 88Q40 88 38 78M64 78Q68 91 80 85Q85 81 75 75" fill="#fff1d8" stroke="#d5a9a0" stroke-width="2"/><path d="M20 43Q14 38 17 32M79 43Q87 38 84 32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          <path d="M43 27Q51 18 60 27" fill="none" stroke="#d5a9a0" stroke-width="2"/><circle cx="47" cy="25" r="2" fill="#ff94bd"/><circle cx="55" cy="25" r="2" fill="#ff94bd"/>
+        </svg>
+        <svg class="chibi chibi-dog" viewBox="0 0 100 100" role="img" aria-label="ลูกสุนัขสีน้ำตาล">
+          <ellipse cx="50" cy="91" rx="29" ry="5" fill="#8d77c9" opacity=".18"/><path d="M30 33Q9 18 14 47Q17 64 33 60M69 33Q91 17 87 47Q84 64 68 60" fill="#bd8a6a" stroke="#946247" stroke-width="2.5"/>
+          <ellipse cx="50" cy="53" rx="29" ry="31" fill="#e9bb91" stroke="#946247" stroke-width="2.5"/><ellipse cx="50" cy="65" rx="18" ry="14" fill="#fff0d8"/>
+          <ellipse cx="40" cy="50" rx="3.5" ry="5" fill="#49364d"/><ellipse cx="60" cy="50" rx="3.5" ry="5" fill="#49364d"/><circle cx="41" cy="48" r="1.3" fill="#fff"/><circle cx="61" cy="48" r="1.3" fill="#fff"/>
+          <ellipse cx="50" cy="60" rx="5" ry="3.5" fill="#49364d"/><path d="M50 63Q46 69 41 65M50 63Q54 69 59 65" fill="none" stroke="#946247" stroke-width="1.8" stroke-linecap="round"/>
+          <ellipse cx="31" cy="59" rx="5" ry="3" fill="#ff9eb8" opacity=".65"/><ellipse cx="69" cy="59" rx="5" ry="3" fill="#ff9eb8" opacity=".65"/>
+          <path d="M33 78Q25 88 36 89L43 82M67 78Q75 88 64 89L57 82" fill="#e9bb91" stroke="#946247" stroke-width="2"/><path d="M34 29Q42 14 51 27Q61 12 70 29" fill="#946247"/><path d="M50 18l4 6 7 1-5 5 1 7-7-4-6 4 1-7-5-5 7-1z" fill="#ffdf76" stroke="#fff" stroke-width="1.5"/>
+        </svg>
+        <span class="mascot-spark spark-a">✦</span><span class="mascot-spark spark-b">✧</span>
+      </div>
     </header>
 
     <section class="search-panel" aria-label="ค้นหาระบบ">

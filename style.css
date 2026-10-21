@@ -315,32 +315,55 @@ body{margin:0;min-height:100vh;font-family:'Noto Sans Thai',sans-serif;padding:0
 .total-badge{box-shadow:inset 3px 3px 7px #fff,inset -3px -4px 8px var(--fur-shade)}
 
 
-/* ===== FLUFFY SVG FILTER ENHANCEMENT ===== */
-/* ใช้ SVG displacement กับชั้นพื้นหลังเท่านั้น เพื่อไม่ให้ข้อความ/ไอคอนบิดเบี้ยว */
-.system-card{
-  isolation:isolate;
-  background:none !important;
-  border:0;
-}
-.system-card::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  width:auto;
-  height:auto;
-  border-radius:inherit;
-  background:
-    var(--fur-tile) 0 0/150px,
-    radial-gradient(120% 90% at 24% 8%,rgba(255,255,255,.94) 0%,rgba(255,255,255,.18) 48%,transparent 70%),
-    linear-gradient(150deg,color-mix(in srgb,var(--accent) 28%,#fff7fb),color-mix(in srgb,var(--accent) 52%,#f7cfe2));
-  background-blend-mode:soft-light,normal,normal;
-  opacity:.98;
-  filter:url(#fluffy);
-  box-shadow:inset 5px 6px 12px rgba(255,255,255,.88),inset -7px -9px 16px color-mix(in srgb,var(--accent) 28%,transparent),0 12px 20px color-mix(in srgb,var(--accent) 26%,transparent);
-  pointer-events:none;
-  z-index:-1;
-  transform:none!important;
-}
-.system-card::after{pointer-events:none}
-/* ปิดเอฟเฟกต์การเคลื่อนไหวเมื่อผู้ใช้ตั้งค่าลด motion */
-@media(prefers-reduced-motion:reduce){.system-card{animation:none!important;transition:none!important}}
+/* ===== CHIBI PASTEL 3D • ICE-CREAM TYPE • PREMIUM PLAYFUL MOTION ===== */
+:root{--candy-pink:#ff9ecb;--candy-lilac:#a99aff;--candy-mint:#a6f0d8;--candy-blue:#a5ddff;--candy-cream:#fff6d9;--candy-ink:#59476e}
+body{background-color:#f5efff;background-image:radial-gradient(ellipse at 5% 8%,rgba(255,184,220,.64),transparent 30%),radial-gradient(ellipse at 95% 18%,rgba(160,220,255,.66),transparent 32%),radial-gradient(ellipse at 18% 82%,rgba(177,245,218,.56),transparent 30%),radial-gradient(ellipse at 86% 90%,rgba(255,226,169,.5),transparent 28%),linear-gradient(135deg,#f9f4ff,#f1f8ff 50%,#fff3f8);background-attachment:fixed}
+.hero{background:radial-gradient(ellipse at 12% 0%,rgba(255,255,255,.78),transparent 38%),linear-gradient(125deg,#b8eaff 0%,#d4c5ff 43%,#ffc8e4 76%,#ffe7bc 100%);box-shadow:0 18px 36px rgba(153,124,217,.23),inset 0 1px 0 rgba(255,255,255,.95);padding-bottom:65px}
+.hero:before,.hero:after{filter:blur(1px);background:rgba(255,255,255,.42)}
+.hero h1{letter-spacing:-.6px;color:#fff;text-shadow:0 2px 0 #f3a7cb,0 4px 0 #d58bc9,0 6px 0 #a48eea,0 10px 18px rgba(105,83,169,.24);-webkit-text-stroke:.45px rgba(255,255,255,.8);paint-order:stroke fill}
+.hero h1 span{display:inline-block;position:relative;color:#fff6c7;text-shadow:0 2px 0 #e5a5bf,0 4px 0 #bb8bdc,0 7px 0 #8d80d8,0 11px 16px rgba(98,73,158,.26);background:linear-gradient(180deg,#fffefb 0%,#fff5cb 28%,#ffd0e8 55%,#d9d0ff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 rgba(255,255,255,.6))}
+.hero h1 span:after{content:"";position:absolute;left:3%;top:8%;width:44%;height:15%;border-radius:99px;background:linear-gradient(90deg,rgba(255,255,255,.82),rgba(255,255,255,0));transform:rotate(-5deg);pointer-events:none}
+.eyebrow{color:#7860b7;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.92);box-shadow:0 5px 14px rgba(122,93,177,.08);backdrop-filter:blur(10px)}
+.hero-icecream{filter:drop-shadow(0 12px 12px rgba(124,84,170,.25));animation:icecreamFloat 4s ease-in-out infinite}
+@keyframes icecreamFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+.mascot-trio{position:absolute;z-index:2;right:100px;bottom:1px;width:285px;height:119px;display:flex;align-items:flex-end;justify-content:center;gap:0;pointer-events:none;filter:drop-shadow(0 9px 10px rgba(111,87,157,.12))}
+.chibi{position:relative;display:block;width:100px;height:116px;overflow:visible;transform-origin:50% 90%;filter:drop-shadow(0 2px 0 rgba(255,255,255,.65));will-change:transform}
+.chibi-child{z-index:2;width:102px;height:120px;animation:chibiDance 3.2s ease-in-out infinite}
+.chibi-cat{width:86px;height:95px;margin-left:-15px;animation:catBounce 2.6s ease-in-out infinite .2s}
+.chibi-dog{width:88px;height:94px;margin-left:-12px;animation:dogWiggle 3.1s ease-in-out infinite .5s}
+@keyframes chibiDance{0%,100%{transform:translateY(0) rotate(-2deg)}25%{transform:translateY(-7px) rotate(3deg)}50%{transform:translateY(0) rotate(0)}75%{transform:translateY(-4px) rotate(-3deg)}}
+@keyframes catBounce{0%,100%{transform:translateY(0) rotate(2deg)}45%{transform:translateY(-9px) rotate(-4deg)}60%{transform:translateY(-7px) rotate(4deg)}}
+@keyframes dogWiggle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-5px) rotate(5deg)}60%{transform:translateY(0) rotate(-5deg)}}
+.mascot-spark{position:absolute;color:#fff;font-size:21px;text-shadow:0 0 8px rgba(255,255,255,.95),0 2px 5px rgba(145,103,208,.4);animation:sparklePop 2s ease-in-out infinite}
+.spark-a{right:5px;top:14px}.spark-b{left:4px;top:35px;font-size:17px;animation-delay:.8s}
+@keyframes sparklePop{0%,100%{transform:scale(.6) rotate(0);opacity:.45}50%{transform:scale(1.25) rotate(20deg);opacity:1}}
+/* Glossy candy-glass controls */
+.search-panel,.total-badge,.filter-chip,.bottom-nav,.settings-dialog,.install-dialog{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.search-panel{background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(255,248,255,.91));border:1px solid rgba(255,255,255,.95);box-shadow:0 12px 30px rgba(160,125,215,.16),inset 0 1px 0 #fff}
+.welcome-row h2,.category-heading h3,.footer-brand strong{color:#64527f;text-shadow:0 1px 0 #fff}
+.section-kicker{color:#9b79d6}
+.category-marker{border-radius:19px;background:linear-gradient(145deg,rgba(255,255,255,.8),rgba(255,255,255,.35));box-shadow:inset 0 1px 0 #fff,0 7px 16px rgba(147,119,200,.12)}
+.category-count{background:linear-gradient(135deg,#fff,#f0e8ff);box-shadow:inset 0 1px 0 #fff,0 4px 10px rgba(151,123,204,.08)}
+.system-card{border:1px solid rgba(255,255,255,.92);border-radius:28px;background:radial-gradient(ellipse at 20% 4%,rgba(255,255,255,.97),transparent 48%),linear-gradient(145deg,color-mix(in srgb,var(--accent) 13%,#fff) 0%,color-mix(in srgb,var(--accent) 28%,#fff7fb) 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.98),inset 0 -5px 10px rgba(151,118,199,.08),0 8px 0 color-mix(in srgb,var(--accent) 24%,#fff),0 15px 24px rgba(124,96,180,.13);transition:transform .28s cubic-bezier(.2,1.5,.4,1),box-shadow .28s,border-radius .28s;isolation:isolate}
+.system-card:before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;background:radial-gradient(ellipse at 78% 10%,rgba(255,255,255,.8),transparent 25%),linear-gradient(120deg,transparent 28%,rgba(255,255,255,.34) 45%,transparent 58%);opacity:.9;pointer-events:none;transform:translateX(-110%);transition:transform .8s ease}
+.system-card:after{content:"";position:absolute;z-index:-1;left:auto;right:12px;top:12px;bottom:auto;width:9px;height:9px;border:0;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 0 14px rgba(255,255,255,.9);opacity:.7;pointer-events:none}
+.system-card:hover{transform:translateY(-7px) scale(1.025) rotate(-.5deg);box-shadow:inset 0 2px 0 #fff,0 9px 0 color-mix(in srgb,var(--accent) 27%,#fff),0 22px 32px rgba(124,96,180,.22)}
+.system-card:hover:before{transform:translateX(110%)}
+.system-card:active{transform:translateY(1px) scale(.97);box-shadow:inset 0 3px 8px rgba(127,94,177,.12),0 3px 0 color-mix(in srgb,var(--accent) 20%,#fff)}
+.card-icon{border:1px solid rgba(255,255,255,.9);background:radial-gradient(circle at 28% 18%,#fff 0%,color-mix(in srgb,var(--accent) 14%,#fff) 56%,color-mix(in srgb,var(--accent) 26%,#ffe7f2) 100%);box-shadow:inset 0 2px 0 #fff,inset 0 -4px 7px rgba(139,100,179,.12),0 7px 13px rgba(128,99,177,.16)}
+.card-icon:after{display:none}
+.card-title{color:#59476e;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+.card-description{color:#766b91}
+.card-tag{border:1px solid rgba(255,255,255,.95);background:rgba(255,255,255,.68);color:#8269ac;box-shadow:inset 0 1px 0 #fff}
+.favorite-btn{border:1px solid rgba(255,255,255,.92);background:rgba(255,255,255,.76);box-shadow:0 4px 10px rgba(132,100,177,.1)}
+.filter-chip{border:1px solid rgba(255,255,255,.95);background:rgba(255,255,255,.72);box-shadow:0 5px 12px rgba(132,100,177,.1)}
+.filter-chip.active{background:linear-gradient(135deg,#ffabd0,#b3a0ff 55%,#9fe8dc);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 8px 16px rgba(149,116,208,.24)}
+.total-number{background:linear-gradient(145deg,#ffb7d8,#b4a4ff 60%,#9fe9db);box-shadow:inset 0 2px 0 rgba(255,255,255,.8),0 5px 10px rgba(149,116,208,.18);text-shadow:0 1px 2px rgba(92,66,140,.2)}
+.bottom-nav{background:rgba(255,255,255,.8)!important;border:1px solid rgba(255,255,255,.98)!important;box-shadow:0 15px 36px rgba(135,109,189,.22),inset 0 1px 0 #fff!important}
+.bottom-fab,.install-fab,.dialog-done,.st-btn.primary{background:linear-gradient(135deg,#ffabd0 0%,#b3a0ff 56%,#9fe8dc 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.78),0 9px 18px rgba(149,116,208,.24)}
+.footer{border-top:1px dashed rgba(139,113,184,.38)}
+/* Keep decoration subtle on small screens and honor accessibility motion settings */
+@media(min-width:1000px){.hero{padding-bottom:72px}.mascot-trio{right:calc(8% + 76px);bottom:3px;transform:scale(1.08);transform-origin:bottom right}.hero-copy{max-width:1028px;padding-right:300px}.hero-icecream{right:calc(8% - 10px);bottom:36px}}
+@media(max-width:760px){.hero{padding-bottom:86px}.hero-copy{padding-right:80px}.hero h1{font-size:28px}.mascot-trio{right:58px;bottom:0;width:195px;height:86px;transform:scale(.72);transform-origin:bottom right}.chibi-child{width:100px;height:120px}.chibi-cat,.chibi-dog{width:86px;height:95px}.hero-icecream{width:54px;right:12px;bottom:40px}.hero-star{right:76px;bottom:66px;width:22px;height:22px}.brand-logo{filter:drop-shadow(0 4px 8px rgba(60,40,140,.2))}}
+@media(max-width:390px){.hero-copy{padding-right:65px}.hero h1{font-size:25px}.mascot-trio{right:43px;transform:scale(.62);bottom:0}.hero-icecream{width:46px;right:7px;bottom:42px}.hero-star{right:55px;bottom:68px}}
+@media(prefers-reduced-motion:reduce){.chibi,.mascot-spark,.hero-icecream,.hero-grid{animation:none!important}.system-card:before{transition:none!important}}
