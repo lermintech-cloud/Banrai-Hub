@@ -313,3 +313,34 @@ body{margin:0;min-height:100vh;font-family:'Noto Sans Thai',sans-serif;padding:0
 .filter-chip.active{background:linear-gradient(135deg,#FF8FC0,#8A6CFF);box-shadow:inset 3px 3px 7px rgba(255,255,255,.45),inset -3px -4px 8px rgba(80,40,160,.3),0 8px 16px rgba(138,108,255,.35)}
 .search-panel{border:0;background:var(--fur-tile) 0 0/160px,var(--fur-cream);box-shadow:inset 4px 5px 10px #fff,inset -5px -6px 12px var(--fur-shade),0 12px 24px rgba(150,110,255,.2)}
 .total-badge{box-shadow:inset 3px 3px 7px #fff,inset -3px -4px 8px var(--fur-shade)}
+
+
+/* ===== FLUFFY SVG FILTER ENHANCEMENT ===== */
+/* ใช้ SVG displacement กับชั้นพื้นหลังเท่านั้น เพื่อไม่ให้ข้อความ/ไอคอนบิดเบี้ยว */
+.system-card{
+  isolation:isolate;
+  background:none !important;
+  border:0;
+}
+.system-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  width:auto;
+  height:auto;
+  border-radius:inherit;
+  background:
+    var(--fur-tile) 0 0/150px,
+    radial-gradient(120% 90% at 24% 8%,rgba(255,255,255,.94) 0%,rgba(255,255,255,.18) 48%,transparent 70%),
+    linear-gradient(150deg,color-mix(in srgb,var(--accent) 28%,#fff7fb),color-mix(in srgb,var(--accent) 52%,#f7cfe2));
+  background-blend-mode:soft-light,normal,normal;
+  opacity:.98;
+  filter:url(#fluffy);
+  box-shadow:inset 5px 6px 12px rgba(255,255,255,.88),inset -7px -9px 16px color-mix(in srgb,var(--accent) 28%,transparent),0 12px 20px color-mix(in srgb,var(--accent) 26%,transparent);
+  pointer-events:none;
+  z-index:-1;
+  transform:none!important;
+}
+.system-card::after{pointer-events:none}
+/* ปิดเอฟเฟกต์การเคลื่อนไหวเมื่อผู้ใช้ตั้งค่าลด motion */
+@media(prefers-reduced-motion:reduce){.system-card{animation:none!important;transition:none!important}}

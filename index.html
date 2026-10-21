@@ -17,6 +17,13 @@
   <link rel="stylesheet" href="./style.css?v=fur2">
 </head>
 <body>
+  <!-- SVG filter สำหรับพื้นผิวขนปุย ใช้กับพื้นหลังการ์ดเท่านั้น -->
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden;pointer-events:none">
+    <filter id="fluffy" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
 
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <main class="app-shell">
