@@ -4,6 +4,7 @@ const BASE = "https://script.google.com/macros/s/AKfycbyNCNM0vR7VSt-RYQB8ukOGwYa
 
 const GROUPS = {student:"งานนักเรียนและดูแลช่วยเหลือ",academic:"งานวิชาการและประเมินผล",operations:"ระบบสนับสนุนการทำงาน"};
 const GROUP_ORDER = ["student","academic","operations"];
+const PASTELS = ["#FF9DBB","#FFB38A","#FFD86B","#B5E48C","#8FE3CF","#8CCBFF","#B8A9FF","#F0A6E8"];
 const COLORS = ["#0A84FF","#00B3E6","#00BFA5","#16B364","#7CB518","#E5B800","#FF8A00","#FF6B2C","#F0284A","#FF3D81","#E02CC0","#8B5CF6","#3D5AFE","#6B7A90"];
 
 /* รายการเริ่มต้น (ใช้เมื่อยังไม่ได้เชื่อมต่อออนไลน์ หรือกด "รีเซ็ต") */
@@ -182,7 +183,8 @@ function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("sh
 
 /* ===== ตั้งค่า (เพิ่ม/แก้ไข/ลบ/เรียงปุ่ม — บันทึกออนไลน์) ===== */
 const dlg = $("settingsDialog");
-const views = ["vSetup","vLogin","vList","vForm"];
+const views = ["vSetup","vLogin","vList","vForm","vTheme"];
+let stTab = "manage";
 const admin = {pass:"", draft:[], dirty:false, editing:null, icon:"link", color:COLORS[0]};
 const ERR = {
  wrong_password:"รหัสผ่านไม่ถูกต้อง", password_not_set:"ยังไม่ได้ตั้งรหัสผ่านผู้ดูแลในสคริปต์ (Code.gs)", locked:"ใส่รหัสผิดหลายครั้ง ถูกล็อกชั่วคราว ลองใหม่ใน 10 นาที",
@@ -191,15 +193,24 @@ const ERR = {
 };
 function showView(name){
  views.forEach(v => $(v).hidden = v !== name); dlg.scrollTop = 0;
+ $("stTabs").hidden = name === "vForm";
+ if(name !== "vForm"){ stTab = name === "vTheme" ? "theme" : "manage"; $("stTabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === stTab)); }
  $("stTitle").textContent = name === "vForm" ? (admin.editing ? "แก้ไขปุ่ม" : "เพิ่มปุ่มใหม่") : "ตั้งค่า";
+}
+function showManage(){
+ if(!API) showView("vSetup");
+ else if(!admin.pass){ $("loginError").hidden = true; $("adminPass").value = ""; showView("vLogin"); if(dlg.open && stTab === "manage") setTimeout(() => $("adminPass").focus(), 60); }
+ else showView("vList");
 }
 function openSettings(){
  if(typeof dlg.showModal !== "function"){ showToast("เบราว์เซอร์นี้ไม่รองรับหน้าตั้งค่า"); return; }
  dlg.showModal();
- if(!API) showView("vSetup");
- else if(!admin.pass){ $("loginError").hidden = true; $("adminPass").value = ""; showView("vLogin"); setTimeout(() => $("adminPass").focus(), 60); }
- else showView("vList");
+ if(stTab === "theme") showView("vTheme"); else showManage();
 }
+$("stTabs").addEventListener("click", e => {
+ const b = e.target.closest("button[data-tab]"); if(!b) return;
+ if(b.dataset.tab === "theme") showView("vTheme"); else showManage();
+});
 function requestClose(){
  if(admin.dirty && !confirm("มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึกขึ้นออนไลน์ ต้องการปิดและทิ้งการแก้ไขหรือไม่?")) return;
  admin.pass = ""; admin.dirty = false; admin.draft = []; dlg.close();
@@ -279,7 +290,8 @@ $("saveOnlineBtn").addEventListener("click", async () => {
 /* --- ฟอร์มเพิ่ม/แก้ไข --- */
 function buildPickers(){
  $("iconPicker").innerHTML = Object.keys(iconPaths).filter(k => k !== "gear").map(k => `<button type="button" data-icon="${k}" title="${k}" aria-label="ไอคอน ${k}">${svgIcon(k)}</button>`).join("");
- $("colorPicker").innerHTML = COLORS.map(c => `<button type="button" data-color="${c}" style="--c:${c}" aria-label="สี ${c}"></button>`).join("");
+ const colorBtn = c => `<button type="button" data-color="${c}" style="--c:${c}" aria-label="สี ${c}"></button>`;
+ $("colorPicker").innerHTML = COLORS.map(colorBtn).join("") + '<span class="pal-sep"></span>' + PASTELS.map(colorBtn).join("");
 }
 function syncPickers(){
  $("iconPicker").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.icon === admin.icon));
@@ -347,8 +359,86 @@ async function refreshSystems(){
  if(JSON.stringify(systems) !== before) renderCards();
 }
 
+/* ===== หน้าตา: การ์ดพาสเทล / เทกเจอร์ / โคมลอย (จำในเครื่องนี้) ===== */
+const THEME_KEY = "banrai-hub-theme-v1";
+const THEME_OPTS = {cards:["pastel","plain"],tint:["soft","mid","vivid"],tex:["none","dots","grain","gingham","linen"],lantern:["on","off"],count:["low","mid","high"],wig:["soft","mid","strong"]};
+const THEME_DEFAULT = {cards:"pastel",tint:"mid",tex:"dots",lantern:"on",count:"mid",wig:"mid"};
+const LANTERN_N = {low:5,mid:8,high:12}, LANTERN_WIG = {soft:.6,mid:1,strong:1.7};
+function readTheme(){
+ let o = {}; try{ o = JSON.parse(localStorage.getItem(THEME_KEY)) || {}; }catch{}
+ const t = {}; for(const k in THEME_DEFAULT) t[k] = THEME_OPTS[k].includes(o[k]) ? o[k] : THEME_DEFAULT[k];
+ return t;
+}
+let theme = readTheme();
+function saveTheme(){ try{ localStorage.setItem(THEME_KEY, JSON.stringify(theme)); }catch{} }
+
+/* ตัวอย่างการ์ดในหน้าตั้งค่า */
+const THEME_SAMPLES = [
+ {name:"เช็คชื่อนักเรียน",desc:"บันทึกการเข้าเรียน",tag:"งานนักเรียน",icon:"users",color:"#0A84FF"},
+ {name:"ระบบลา",desc:"จัดการการลาบุคลากร",tag:"งานบุคลากร",icon:"calendarcheck",color:"#FF3D81"},
+ {name:"ปฏิทินวิชาการ",desc:"กิจกรรมสำคัญของโรงเรียน",tag:"ปฏิทิน",icon:"calendar",color:"#16B364"}
+];
+function buildThemePreview(){
+ $("themePreview").innerHTML = THEME_SAMPLES.map(s => `<div class="system-card preview" style="--accent:${s.color}">${cardInner(s)}</div>`).join("");
+}
+
+/* โคมลอยดิ้นในแบนเนอร์ */
+const lanternLayer = $("lanternLayer"), heroEl = document.querySelector(".hero");
+let lanternKey = "";
+const rng = seed => () => (seed = seed * 16807 % 2147483647) / 2147483647;
+function lanternSvg(fill, face){
+ return `<svg viewBox="0 0 60 84" aria-hidden="true"><circle class="lantern-glow" cx="30" cy="46" r="44" fill="url(#lnGlow)"/>`
+  + `<path d="M17 9C9 22 5 40 9 66h42c4-26 0-44-8-57z" fill="url(#${fill})" stroke="rgba(255,255,255,.75)" stroke-width="1.4" stroke-linejoin="round"/>`
+  + `<path d="M30 12v54M23 11C17 30 15 50 16 66M37 11c6 19 8 39 7 55" fill="none" stroke="rgba(190,110,60,.26)" stroke-width="1.2"/>`
+  + `<ellipse cx="30" cy="9" rx="13" ry="4.5" fill="#FFF0C9" stroke="rgba(255,255,255,.8)" stroke-width="1.2"/>`
+  + (face ? `<ellipse cx="23" cy="41" rx="1.9" ry="2.5" fill="#6B3B2A"/><ellipse cx="37" cy="41" rx="1.9" ry="2.5" fill="#6B3B2A"/><path d="M26.5 47q3.5 3.6 7 0" fill="none" stroke="#6B3B2A" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="18.5" cy="46" rx="3" ry="1.8" fill="#FF8FB0" opacity=".65"/><ellipse cx="41.5" cy="46" rx="3" ry="1.8" fill="#FF8FB0" opacity=".65"/>` : "")
+  + `<rect x="8" y="65" width="44" height="5.5" rx="2.7" fill="#D9A06B"/><ellipse cx="30" cy="66" rx="20" ry="1.8" fill="#FFEFC2" opacity=".85"/>`
+  + `<path class="lantern-flame" d="M30 82c-6-5-4-11 0-15 4 4 6 10 0 15z" fill="#FFD24D"/><path class="lantern-flame in" d="M30 79c-3-3-2-6 0-8 2 2 3 5 0 8z" fill="#FF8A3D"/></svg>`;
+}
+function buildLanterns(){
+ if(!lanternLayer) return;
+ const small = innerWidth < 760;
+ const n = theme.lantern === "on" ? Math.round(LANTERN_N[theme.count] * (small ? .7 : 1)) : 0;
+ const key = n + (small ? "s" : "l");
+ if(key === lanternKey) return; lanternKey = key;
+ const r = rng(20261022), fills = ["lnA","lnB","lnC"]; let html = "";
+ for(let i = 0; i < n; i++){
+  const size = Math.round((small ? 22 : 28) + r() * (small ? 18 : 26));
+  const x = ((i + .5) / n * 100 + (r() - .5) * (60 / n)).toFixed(1);
+  const dur = 24 - size * .2 + r() * 6;
+  const o = (.72 + (size - 22) / 32 * .28).toFixed(2);
+  html += `<div class="lantern" style="--x:${x}%;--s:${size}px;--d:${dur.toFixed(1)}s;--dl:-${(r() * dur).toFixed(1)}s;--sw:${(8 + r() * 14).toFixed(0)}px;--wd:${(2.2 + r() * 1.6).toFixed(2)}s;--wl:-${(r() * 3).toFixed(2)}s;--r:${(.12 + r() * .7).toFixed(2)};--o:${Math.min(o,1)}">`
+   + `<div class="lantern-sway">${lanternSvg(fills[i % 3], i % 3 === 0)}</div></div>`;
+ }
+ lanternLayer.innerHTML = html;
+}
+function sizeLanternLayer(){ if(lanternLayer && heroEl) lanternLayer.style.setProperty("--h", heroEl.offsetHeight + "px"); }
+let lanternResizeT;
+window.addEventListener("resize", () => { clearTimeout(lanternResizeT); lanternResizeT = setTimeout(() => { sizeLanternLayer(); buildLanterns(); }, 150); });
+if(window.ResizeObserver && heroEl) new ResizeObserver(sizeLanternLayer).observe(heroEl);
+
+function syncThemeUI(){
+ document.querySelectorAll("#vTheme .seg").forEach(seg => seg.querySelectorAll("button").forEach(b => {
+  const on = theme[seg.dataset.key] === b.dataset.v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
+ }));
+ $("cardOpts").classList.toggle("is-off", theme.cards === "plain");
+ $("lanternOpts").classList.toggle("is-off", theme.lantern === "off");
+}
+function applyTheme(){
+ const r = document.documentElement;
+ r.dataset.cards = theme.cards; r.dataset.tint = theme.tint; r.dataset.tex = theme.tex; r.dataset.lantern = theme.lantern;
+ if(lanternLayer) lanternLayer.style.setProperty("--wig", LANTERN_WIG[theme.wig]);
+ sizeLanternLayer(); buildLanterns(); syncThemeUI();
+}
+document.querySelectorAll("#vTheme .seg").forEach(seg => seg.addEventListener("click", e => {
+ const b = e.target.closest("button[data-v]"); if(!b) return;
+ theme[seg.dataset.key] = b.dataset.v; saveTheme(); applyTheme();
+}));
+$("themeReset").addEventListener("click", () => { theme = {...THEME_DEFAULT}; saveTheme(); applyTheme(); showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
+$("themeDone").addEventListener("click", requestClose);
+
 /* ===== เริ่มทำงาน ===== */
-buildPickers();
+buildPickers(); buildThemePreview(); applyTheme();
 const cached = API ? readCache() : null;
 if(cached){            // มีของเดิม: แสดงทันที แล้วอัปเดตจากออนไลน์เงียบๆ ข้างหลัง
  systems = cached.systems; sysVersion = cached.version; source = "cache"; renderCards();
