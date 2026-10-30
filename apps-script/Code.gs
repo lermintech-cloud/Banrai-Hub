@@ -260,7 +260,28 @@ function validateTheme_(o) {
     if (THEME_OPTS[k].indexOf(o[k]) < 0) return 'invalid_theme';
     out[k] = o[k];
   }
+  const bn = validateBanner_(o.banner);
+  if (typeof bn === 'string') return bn;
+  out.banner = bn;
   return out;
+}
+
+// แบนเนอร์ส่วนกลาง: ใช้ได้เฉพาะลิงก์ https หรือพาธไฟล์ในเว็บ (ไม่รับ data: เพื่อไม่ให้ข้อมูลใหญ่)
+const BN_URL_OK = /^(?:https?:\/\/[^\s"'()\\]+|(?!\/)(?!.*\.\.)[A-Za-z0-9_\-.\/]+\.(?:png|jpe?g|webp|gif|svg|avif))$/i;
+function validateBanner_(b) {
+  b = (b && typeof b === 'object') ? b : {};
+  const url = String(b.url || '').trim();
+  if (url && (url.length > 1000 || !BN_URL_OK.test(url))) return 'invalid_banner';
+  const num = function (v, lo, hi, d, dec) {
+    v = Number(v);
+    if (!isFinite(v)) return d;
+    v = Math.min(hi, Math.max(lo, v));
+    return dec ? Math.round(v * 10) / 10 : Math.round(v);
+  };
+  return {
+    url: url, x: num(b.x, 0, 100, 50, true), y: num(b.y, 0, 100, 50, true),
+    zoom: num(b.zoom, 100, 300, 100), h: num(b.h, 0, 420, 0), ov: num(b.ov, -60, 60, 0)
+  };
 }
 
 // ---------- ตรวจข้อมูลก่อนบันทึก ----------

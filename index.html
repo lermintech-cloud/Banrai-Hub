@@ -24,6 +24,7 @@
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <main class="app-shell">
     <header class="hero">
+      <div class="bn-layer hero-banner" id="heroBanner" aria-hidden="true"><i></i></div>
       <div class="hero-top">
         <div class="brand">
           <img class="brand-logo" src="./icons/logo.png" alt="โลโก้โรงเรียนบ้านไร่">
@@ -188,6 +189,25 @@
         <summary><span class="sec-ic" style="--c:#F59E0B">⚡</span><span class="sec-tt"><b>ชุดสำเร็จรูป</b><small data-sum="preset">แตะครั้งเดียวเปลี่ยนทั้งหน้าตา</small></span><i class="sec-chev" aria-hidden="true"></i></summary>
         <div class="sec-body">
           <div class="preset-row" id="presetRow"></div>
+        </div>
+      </details>
+      <details class="st-sec">
+        <summary><span class="sec-ic" style="--c:#0EA5E9">🖼</span><span class="sec-tt"><b>แบนเนอร์</b><small data-sum="banner"></small></span><i class="sec-chev" aria-hidden="true"></i></summary>
+        <div class="sec-body">
+          <div class="bn-box"><div class="bn-layer" id="bnStage" aria-hidden="true"><i></i></div><span class="bn-empty">ยังไม่มีรูปแบนเนอร์</span><span class="bn-hint">ลากเพื่อเลื่อนรูป</span></div>
+          <p class="bn-msg" id="bnMsg" hidden></p>
+          <div class="st-field mt"><span>ลิงก์รูป</span><input type="text" id="bnUrl" class="bn-url" autocomplete="off" spellcheck="false" inputmode="url"></div>
+          <div class="th-actions" id="bnUploadRow"><label class="st-btn ghost bn-up">📷 อัปโหลดจากเครื่อง<input type="file" id="bnFile" accept="image/jpeg,image/png,image/webp" hidden></label></div>
+          <p class="st-hint" id="bnUpNote" hidden>แบนเนอร์ส่วนกลางต้องใช้ “ลิงก์รูป” (https://… หรือไฟล์ในเว็บ เช่น banners/hero.jpg ที่อัปโหลดไว้ใน GitHub ของเว็บ) — อัปโหลดจากเครื่องใช้ได้เฉพาะโหมด “ของฉัน”</p>
+          <div id="bnCtl">
+            <label class="bn-sl"><span>ซูม</span><input type="range" id="bnZoom" min="100" max="300" step="1"><em id="bnZoomV"></em></label>
+            <label class="bn-sl"><span>ซ้าย–ขวา</span><input type="range" id="bnX" min="0" max="100" step="0.5"><em id="bnXV"></em></label>
+            <label class="bn-sl"><span>บน–ล่าง</span><input type="range" id="bnY" min="0" max="100" step="0.5"><em id="bnYV"></em></label>
+            <label class="bn-sl"><span>ความสูง</span><input type="range" id="bnH" min="0" max="420" step="10"><em id="bnHV"></em></label>
+            <label class="bn-sl"><span>ฉากทับ</span><input type="range" id="bnOv" min="-60" max="60" step="5"><em id="bnOvV"></em></label>
+            <p class="st-hint">ฉากทับ: ค่าบวก = เคลือบสีดำให้ตัวหนังสือชัดขึ้น • ค่าลบ = เคลือบสีขาว</p>
+          </div>
+          <div class="th-actions"><button type="button" class="st-btn ghost" id="bnClear" hidden>ลบรูปแบนเนอร์</button></div>
         </div>
       </details>
       <details class="st-sec">

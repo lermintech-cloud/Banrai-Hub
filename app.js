@@ -195,7 +195,7 @@ const ERR = {
  network:"เชื่อมต่อออนไลน์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่", busy:"ระบบกำลังบันทึกให้ผู้อื่น ลองใหม่อีกครั้ง", version_conflict:"ข้อมูลถูกแก้ไขโดยผู้อื่นไปก่อนแล้ว",
  invalid_url:"ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http:// หรือ https://)", invalid_name:"ชื่อปุ่มไม่ถูกต้อง", too_many_items:"จำนวนปุ่มเกินกำหนด (สูงสุด 60)",
  unknown_action:"หลังบ้าน (Code.gs) ยังเป็นเวอร์ชันเก่า — วางโค้ดใหม่แล้ว Deploy เวอร์ชันใหม่ (ดู apps-script/UPDATE-ESERVICE.md)", bad_request:"ข้อมูลไม่ถูกต้อง",
- invalid_theme:"ค่าหน้าตาไม่ถูกต้อง", invalid_data:"ข้อมูลไม่ถูกต้อง", invalid_id:"รหัสรายการไม่ถูกต้อง", invalid_group:"หมวดหมู่ไม่ถูกต้อง", invalid_color:"สีไม่ถูกต้อง", invalid_icon:"ไอคอนไม่ถูกต้อง", invalid_cats:"ต้องมีอย่างน้อย 1 หมวด", too_many_cats:"จำนวนหมวดเกินกำหนด (สูงสุด 20)", too_many_links:"จำนวนลิงก์เกินกำหนด (สูงสุด 150)"
+ invalid_theme:"ค่าหน้าตาไม่ถูกต้อง", invalid_banner:"ลิงก์รูปแบนเนอร์ไม่ถูกต้อง", invalid_data:"ข้อมูลไม่ถูกต้อง", invalid_id:"รหัสรายการไม่ถูกต้อง", invalid_group:"หมวดหมู่ไม่ถูกต้อง", invalid_color:"สีไม่ถูกต้อง", invalid_icon:"ไอคอนไม่ถูกต้อง", invalid_cats:"ต้องมีอย่างน้อย 1 หมวด", too_many_cats:"จำนวนหมวดเกินกำหนด (สูงสุด 20)", too_many_links:"จำนวนลิงก์เกินกำหนด (สูงสุด 150)"
 };
 function showView(name){
  views.forEach(v => $(v).hidden = v !== name); dlg.scrollTop = 0;
@@ -393,7 +393,20 @@ const LANTERN_N = {low:5,mid:8,high:12}, LANTERN_WIG = {soft:.6,mid:1,strong:1.7
    ผู้เข้าใช้ครั้งแรก (ยังไม่เคยกดสลับโหมด) จะได้แบบส่วนกลางเสมอ */
 const THEME_MODE_KEY = "banrai-hub-theme-mode-v1";      // "online" | "local" (ไม่มีค่า = ยังไม่เคยเลือก = online)
 const THEME_ONLINE_KEY = "banrai-hub-theme-online-v1";  // สำเนาหน้าตาส่วนกลางล่าสุด ไว้แสดงผลเร็ว/ออฟไลน์
-function cleanTheme(o){ o = o && typeof o === "object" ? o : {}; const t = {}; for(const k in THEME_DEFAULT) t[k] = THEME_OPTS[k].includes(o[k]) ? o[k] : THEME_DEFAULT[k]; return t; }
+/* แบนเนอร์ (รูปในส่วนหัว): url = ลิงก์ https / พาธในเว็บ (เช่น banners/hero.jpg) / data: (เฉพาะโหมดของฉัน)
+   x,y = ตำแหน่งรูป 0–100 • zoom = 100–300 • h = ความสูงส่วนหัว px (0 = อัตโนมัติ) • ov = ฉากทับ -60 (ขาว) … 60 (ดำ) */
+const BANNER_DEFAULT = {url:"", x:50, y:50, zoom:100, h:0, ov:0};
+const BN_URL_OK = /^(?:https?:\/\/[^\s"'()\\]+|(?!\/)(?!.*\.\.)[A-Za-z0-9_\-.\/]+\.(?:png|jpe?g|webp|gif|svg|avif))$/i;
+const BN_DATA_OK = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
+function cleanBanner(o, allowData = true){
+ o = o && typeof o === "object" ? o : {};
+ const num = (v, lo, hi, d, dec) => { v = Number(v); if(!Number.isFinite(v)) return d; v = Math.min(hi, Math.max(lo, v)); return dec ? Math.round(v * 10) / 10 : Math.round(v); };
+ let url = String(o.url || "").trim();
+ const ok = (url.length <= 1000 && BN_URL_OK.test(url)) || (allowData && url.length <= 700000 && BN_DATA_OK.test(url));
+ if(!ok) url = "";
+ return {url, x:num(o.x,0,100,50,1), y:num(o.y,0,100,50,1), zoom:num(o.zoom,100,300,100), h:num(o.h,0,420,0), ov:num(o.ov,-60,60,0)};
+}
+function cleanTheme(o){ o = o && typeof o === "object" ? o : {}; const t = {}; for(const k in THEME_DEFAULT) t[k] = THEME_OPTS[k].includes(o[k]) ? o[k] : THEME_DEFAULT[k]; t.banner = cleanBanner(o.banner); return t; }
 function readLS(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } }
 let themeLocal = cleanTheme(readLS(THEME_KEY));
 let themeMode = (() => { try{ return localStorage.getItem(THEME_MODE_KEY) === "local" ? "local" : "online"; }catch{ return "online"; } })();
@@ -404,7 +417,7 @@ let themeDraft = null, themeDirty = false;   // themeDraft != null = ผู้�
 const effMode = () => themeDraft ? "online" : (themeMode === "online" && themeSupported !== false ? "online" : "local");
 function resolveTheme(){ return themeDraft || (effMode() === "online" ? (themeOnline || {...THEME_DEFAULT}) : themeLocal); }
 let theme = resolveTheme();
-function saveThemeLocal(){ try{ localStorage.setItem(THEME_KEY, JSON.stringify(themeLocal)); }catch{} }
+function saveThemeLocal(){ try{ localStorage.setItem(THEME_KEY, JSON.stringify(themeLocal)); return true; }catch{ return false; } }
 function syncTheme(){ theme = resolveTheme(); applyTheme(); }
 function canEditTheme(){ return !!themeDraft || effMode() === "local"; }
 function setTheme(patch){                      // แก้ได้เฉพาะ: โหมดของฉัน หรือผู้ดูแลกำลังแก้ส่วนกลาง
@@ -532,7 +545,7 @@ function syncSummaries(){
 document.querySelectorAll("#vTheme details.st-sec").forEach(d => d.addEventListener("toggle", () => {   // เปิดทีละหมวด
  if(d.open) document.querySelectorAll("#vTheme details.st-sec").forEach(o => { if(o !== d) o.open = false; });
 }));
-function syncThemeUI(){ syncSummaries(); syncScopeUI();
+function syncThemeUI(){ syncSummaries(); syncScopeUI(); syncBannerUI();
  document.querySelectorAll("#vTheme [data-key]").forEach(box => box.querySelectorAll("button[data-v]").forEach(b => {
   const on = theme[box.dataset.key] === b.dataset.v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
  }));
@@ -545,13 +558,13 @@ function applyTheme(){
  document.querySelectorAll(".card-icon").forEach(el => { el.dataset.ist = theme.ics; });
  if(metaTheme) metaTheme.content = SKIN_META[r.dataset.skin] || META0;
  if(lanternLayer) lanternLayer.style.setProperty("--wig", LANTERN_WIG[theme.wig]);
- sizeLanternLayer(); buildLanterns(); syncThemeUI();
+ applyBanner(); sizeLanternLayer(); buildLanterns(); syncThemeUI();
 }
 document.querySelectorAll("#vTheme [data-key]").forEach(box => box.addEventListener("click", e => {
  const b = e.target.closest("button[data-v]"); if(!b) return;
  setTheme({[box.dataset.key]: b.dataset.v});
 }));
-$("themeReset").addEventListener("click", () => { if(setTheme({...THEME_DEFAULT})) showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
+$("themeReset").addEventListener("click", () => { if(setTheme({...THEME_DEFAULT, banner:{...BANNER_DEFAULT}})) showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
 
 /* ===== ตัวเลือกขอบเขต: ส่วนกลาง / ของฉัน + โหมดผู้ดูแล ===== */
 function syncScopeUI(){
@@ -598,6 +611,112 @@ $("themeSaveOnline").addEventListener("click", async () => {
  if(r.error === "wrong_password" || r.error === "locked"){ admin.pass = ""; endThemeAdmin(); }
  alert("บันทึกไม่สำเร็จ: " + (ERR[r.error] || r.error || "ไม่ทราบสาเหตุ")); syncScopeUI();
 });
+
+/* ===== แบนเนอร์ (รูปในส่วนหัว) — ลากเลื่อน/ซูม/ปรับความสูง ===== */
+const heroBanner = $("heroBanner"), bnStage = $("bnStage"), bnAR = {}, bnBad = new Set();
+function bnLoad(url, cb){
+ if(bnAR[url]){ cb(bnAR[url]); return; }
+ if(bnBad.has(url)){ cb(0); return; }
+ const im = new Image();
+ im.onload = () => { bnAR[url] = (im.naturalWidth / im.naturalHeight) || 1; cb(bnAR[url]); };
+ im.onerror = () => { bnBad.add(url); cb(0); };
+ im.src = url;
+}
+function paintBanner(el, b){
+ if(!el) return;
+ if(!b.url){ el.classList.remove("on"); return; }
+ el.style.setProperty("--bu", 'url("' + b.url + '")');
+ el.style.setProperty("--bx", b.x); el.style.setProperty("--by", b.y); el.style.setProperty("--bz", b.zoom / 100);
+ el.style.setProperty("--bo", b.ov > 0 ? `rgba(0,0,0,${b.ov / 100})` : b.ov < 0 ? `rgba(255,255,255,${-b.ov / 100})` : "transparent");
+ bnLoad(b.url, ar => {
+  if(cleanBanner(theme.banner).url !== b.url) return;       // เปลี่ยนรูปไปแล้ว
+  if(ar){ el.style.setProperty("--ar", ar); el.classList.add("on"); } else el.classList.remove("on");
+  if(el === bnStage) showBnMsg(ar ? "" : "โหลดรูปไม่สำเร็จ — ตรวจลิงก์/ไฟล์อีกครั้ง");
+ });
+}
+function applyBanner(){
+ const b = cleanBanner(theme.banner), r = document.documentElement;
+ r.dataset.bn = b.url ? "on" : "off";
+ r.style.setProperty("--bn-h", b.h ? b.h + "px" : "0px");
+ paintBanner(heroBanner, b); paintBanner(bnStage, b);
+ [["bnZoom", b.zoom, b.zoom + "%"], ["bnX", b.x, Math.round(b.x) + "%"], ["bnY", b.y, Math.round(b.y) + "%"], ["bnH", b.h, b.h ? b.h + "px" : "อัตโนมัติ"],
+  ["bnOv", b.ov, b.ov === 0 ? "ไม่มี" : b.ov > 0 ? "ดำ " + b.ov + "%" : "ขาว " + (-b.ov) + "%"]].forEach(([id, v, t]) => {
+  const el = $(id); if(el && String(el.value) !== String(v)) el.value = v; const lab = $(id + "V"); if(lab) lab.textContent = t;
+ });
+}
+function showBnMsg(t){ const m = $("bnMsg"); m.textContent = t; m.hidden = !t; }
+function syncBannerUI(){
+ const b = cleanBanner(theme.banner), has = !!b.url;
+ const sum = document.querySelector('[data-sum="banner"]'); if(sum) sum.textContent = has ? "มีรูปแบนเนอร์" : "ยังไม่มีรูป";
+ if(document.activeElement !== $("bnUrl")) $("bnUrl").value = b.url.startsWith("data:") ? "" : b.url;
+ $("bnUrl").placeholder = b.url.startsWith("data:") ? "(ใช้รูปที่อัปโหลดจากเครื่อง)" : "https://… หรือ banners/hero.jpg";
+ $("bnStage").parentElement.classList.toggle("has", has);
+ $("bnCtl").classList.toggle("is-off", !has); $("bnClear").hidden = !has;
+ $("bnUploadRow").hidden = !!themeDraft;
+ $("bnUpNote").hidden = !themeDraft;
+ if(!has) showBnMsg("");
+}
+function setBanner(patch, commit){
+ if(!canEditTheme()) return false;
+ const nb = cleanBanner({...cleanBanner(theme.banner), ...patch}, !themeDraft);
+ if(themeDraft){ themeDraft = {...themeDraft, banner:nb}; themeDirty = true; $("themeSaveOnline").disabled = false; }
+ else{ themeLocal = {...themeLocal, banner:nb}; if(commit && !saveThemeLocal()) showToast("พื้นที่จัดเก็บในเครื่องเต็ม — รูปนี้อาจไม่ถูกจำ ลองใช้รูปที่เล็กลงหรือวางลิงก์แทน"); }
+ theme = resolveTheme(); applyBanner(); if(commit) syncBannerUI();
+ return true;
+}
+$("bnUrl").addEventListener("change", e => {
+ const v = e.target.value.trim();
+ if(!v){ setBanner({url:""}, true); return; }
+ const ok = cleanBanner({url:v}, false).url;
+ if(!ok){ showBnMsg("ลิงก์ไม่ถูกต้อง — ใช้ https://… หรือพาธไฟล์ในเว็บ เช่น banners/hero.jpg (นามสกุล png/jpg/webp/gif/svg/avif)"); return; }
+ showBnMsg(""); setBanner({url:v, x:50, y:50, zoom:100}, true);
+});
+[["bnZoom","zoom"],["bnX","x"],["bnY","y"],["bnH","h"],["bnOv","ov"]].forEach(([id, key]) => {
+ $(id).addEventListener("input", e => setBanner({[key]: Number(e.target.value)}, false));
+ $(id).addEventListener("change", () => setBanner({}, true));
+});
+$("bnClear").addEventListener("click", () => { setBanner({url:"", x:50, y:50, zoom:100}, true); showBnMsg(""); });
+function bnCompress(file){
+ return new Promise((res, rej) => {
+  const u = URL.createObjectURL(file), im = new Image();
+  im.onerror = () => { URL.revokeObjectURL(u); rej(); };
+  im.onload = () => {
+   URL.revokeObjectURL(u);
+   let maxW = 1600, q = .82, out = "";
+   for(let i = 0; i < 5; i++){
+    const sc = Math.min(1, maxW / im.naturalWidth), c = document.createElement("canvas"), g = c.getContext("2d");
+    c.width = Math.max(1, Math.round(im.naturalWidth * sc)); c.height = Math.max(1, Math.round(im.naturalHeight * sc));
+    g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+    out = c.toDataURL("image/jpeg", q);
+    if(out.length < 550000) break; maxW *= .75; q = Math.max(.5, q - .08);
+   }
+   out.length <= 700000 ? res(out) : rej();
+  };
+  im.src = u;
+ });
+}
+$("bnFile").addEventListener("change", async e => {
+ const f = e.target.files && e.target.files[0]; e.target.value = ""; if(!f || themeDraft) return;
+ if(!/^image\/(jpeg|png|webp)$/.test(f.type)){ showBnMsg("รองรับไฟล์ JPG / PNG / WebP"); return; }
+ try{ const url = await bnCompress(f); showBnMsg(""); setBanner({url, x:50, y:50, zoom:100}, true); showToast("ใส่รูปแบนเนอร์แล้ว — ลากบนตัวอย่างเพื่อเลื่อนตำแหน่ง"); }
+ catch{ showBnMsg("ใช้รูปนี้ไม่ได้ ลองไฟล์อื่น"); }
+});
+/* ลากบนตัวอย่างเพื่อเลื่อนรูป (คำนวณจากส่วนเกินของรูปจริง จึงตามนิ้ว/เมาส์พอดี) */
+let bnDrag = null;
+const bnBox = bnStage.parentElement;
+bnBox.addEventListener("pointerdown", e => {
+ const b = cleanBanner(theme.banner), ar = bnAR[b.url];
+ if(!b.url || !ar || !canEditTheme()) return;
+ bnBox.setPointerCapture(e.pointerId); bnBox.classList.add("drag");
+ bnDrag = {x:e.clientX, y:e.clientY, b, ar, r:bnBox.getBoundingClientRect()};
+});
+bnBox.addEventListener("pointermove", e => {
+ if(!bnDrag) return;
+ const {b, ar, r} = bnDrag, iw = Math.max(r.width, r.height * ar) * b.zoom / 100, ih = iw / ar, ox = iw - r.width, oy = ih - r.height;
+ setBanner({x: ox > 1 ? b.x - (e.clientX - bnDrag.x) / ox * 100 : b.x, y: oy > 1 ? b.y - (e.clientY - bnDrag.y) / oy * 100 : b.y}, false);
+});
+const bnEnd = () => { if(!bnDrag) return; bnDrag = null; bnBox.classList.remove("drag"); setBanner({}, true); };
+bnBox.addEventListener("pointerup", bnEnd); bnBox.addEventListener("pointercancel", bnEnd);
 $("themeDone").addEventListener("click", requestClose);
 
 /* ===== บริการ สพป. (E-Service): การ์ดหน้าแรก • แผงเลื่อนขึ้น • แก้ไขในตั้งค่า (จำในเครื่องนี้) ===== */

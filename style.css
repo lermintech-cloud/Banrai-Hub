@@ -588,3 +588,25 @@ body{
 .th-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .th-actions .st-btn{padding:9px 14px;font-size:12.5px}
 .th-actions [hidden],.st-savebar [hidden]{display:none}
+
+/* แบนเนอร์ในส่วนหัว */
+.bn-layer{position:absolute;inset:0;container-type:size;overflow:hidden;opacity:0;transition:opacity .45s;pointer-events:none}
+.bn-layer.on{opacity:1}
+.bn-layer i{position:absolute;inset:0;background-image:var(--bu);background-repeat:no-repeat;background-size:calc(max(100cqw,100cqh * var(--ar,1.6)) * var(--bz,1)) auto;background-position:calc(var(--bx,50) * 1%) calc(var(--by,50) * 1%)}
+.bn-layer:after{content:"";position:absolute;inset:0;background:var(--bo,transparent)}
+.hero-banner{z-index:-1}
+html[data-bn="on"] .hero{min-height:var(--bn-h,0px)}
+html[data-bn="on"] .hero:before,html[data-bn="on"] .hero:after,html[data-bn="on"] .hero .hero-grid{display:none}
+.bn-box{position:relative;aspect-ratio:2/1;border-radius:16px;overflow:hidden;background:#E3ECF5;touch-action:none;user-select:none;-webkit-user-select:none}
+.bn-box.has{cursor:grab}.bn-box.has.drag{cursor:grabbing}
+.bn-empty{position:absolute;inset:0;display:grid;place-items:center;font-size:12.5px;font-weight:700;color:#6B849B}
+.bn-box.has .bn-empty{display:none}
+.bn-hint{position:absolute;right:8px;bottom:8px;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.45);color:#fff;font-size:11px;font-weight:700;pointer-events:none;display:none}
+.bn-box.has .bn-hint{display:block}
+.bn-msg{margin:8px 2px 0;font-size:12.5px;line-height:1.6;font-weight:700;color:#B42318}
+.bn-url{width:100%;box-sizing:border-box;border:2px solid #E1EAF3;border-radius:14px;padding:10px 12px;font:600 13px 'Noto Sans Thai',sans-serif;background:#fff;color:#243B53}
+.bn-sl{display:grid;grid-template-columns:78px 1fr 74px;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;font-weight:700}
+.bn-sl input{width:100%;min-width:0}
+.bn-sl em{font-style:normal;text-align:right;font-size:12px;opacity:.8}
+.bn-up{display:inline-block;cursor:pointer}
+.th-actions[hidden]{display:none}
