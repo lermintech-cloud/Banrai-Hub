@@ -1,5 +1,5 @@
-const CACHE_NAME = "banrai-school-hub-v11";
-const APP_SHELL = ["./", "./index.html", "./style.css", "./themes.css", "./app.js", "./config.js", "./manifest.json", "./icons/logo.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon.png", "./icons/fur-tile.png", "./icons/fur-edge.png"];
+const CACHE_NAME = "banrai-school-hub-v12";
+const APP_SHELL = ["./", "./index.html", "./style.css", "./themes.css", "./eservice.css", "./eservice-data.js", "./app.js", "./config.js", "./manifest.json", "./icons/logo.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/favicon.png", "./icons/fur-tile.png", "./icons/fur-edge.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
 });

@@ -97,6 +97,7 @@ async function loadSystems(silent){
   if(!j || !j.ok) throw new Error("bad");
   const list = normalize(j.systems);
   sysVersion = j.version || null;
+  if("eservice" in j){ esOnline = true; esApplyOnline(j.eservice, j.esVersion); }
   if(list.length){ systems = list; source = "online"; writeCache(list, sysVersion); }
   else { systems = clone(DEFAULT_SYSTEMS); source = "empty"; }
  }catch(e){
@@ -183,36 +184,48 @@ function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("sh
 
 /* ===== ตั้งค่า (เพิ่ม/แก้ไข/ลบ/เรียงปุ่ม — บันทึกออนไลน์) ===== */
 const dlg = $("settingsDialog");
-const views = ["vSetup","vLogin","vList","vForm","vTheme"];
+const views = ["vSetup","vLogin","vList","vForm","vTheme","vEs","vEsForm"];
 let stTab = "manage";
 const admin = {pass:"", draft:[], dirty:false, editing:null, icon:"link", color:COLORS[0]};
+const esf = {mode:"link", editing:null, icon:"link", color:COLORS[0]};   // ฟอร์มเพิ่ม/แก้ไขลิงก์ E-Service
 const ERR = {
  wrong_password:"รหัสผ่านไม่ถูกต้อง", password_not_set:"ยังไม่ได้ตั้งรหัสผ่านผู้ดูแลในสคริปต์ (Code.gs)", locked:"ใส่รหัสผิดหลายครั้ง ถูกล็อกชั่วคราว ลองใหม่ใน 10 นาที",
  network:"เชื่อมต่อออนไลน์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่", busy:"ระบบกำลังบันทึกให้ผู้อื่น ลองใหม่อีกครั้ง", version_conflict:"ข้อมูลถูกแก้ไขโดยผู้อื่นไปก่อนแล้ว",
- invalid_url:"ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http:// หรือ https://)", invalid_name:"ชื่อปุ่มไม่ถูกต้อง", too_many_items:"จำนวนปุ่มเกินกำหนด (สูงสุด 60)"
+ invalid_url:"ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http:// หรือ https://)", invalid_name:"ชื่อปุ่มไม่ถูกต้อง", too_many_items:"จำนวนปุ่มเกินกำหนด (สูงสุด 60)",
+ unknown_action:"หลังบ้าน (Code.gs) ยังเป็นเวอร์ชันเก่า — วางโค้ดใหม่แล้ว Deploy เวอร์ชันใหม่ (ดู apps-script/UPDATE-ESERVICE.md)", bad_request:"ข้อมูลไม่ถูกต้อง",
+ invalid_data:"ข้อมูลไม่ถูกต้อง", invalid_id:"รหัสรายการไม่ถูกต้อง", invalid_group:"หมวดหมู่ไม่ถูกต้อง", invalid_color:"สีไม่ถูกต้อง", invalid_icon:"ไอคอนไม่ถูกต้อง", invalid_cats:"ต้องมีอย่างน้อย 1 หมวด", too_many_cats:"จำนวนหมวดเกินกำหนด (สูงสุด 20)", too_many_links:"จำนวนลิงก์เกินกำหนด (สูงสุด 150)"
 };
 function showView(name){
  views.forEach(v => $(v).hidden = v !== name); dlg.scrollTop = 0;
- $("stTabs").hidden = name === "vForm";
- if(name !== "vForm"){ stTab = name === "vTheme" ? "theme" : "manage"; $("stTabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === stTab)); }
- $("stTitle").textContent = name === "vForm" ? (admin.editing ? "แก้ไขปุ่ม" : "เพิ่มปุ่มใหม่") : "ตั้งค่า";
+ const sub = name === "vForm" || name === "vEsForm";
+ $("stTabs").hidden = sub;
+ if(!sub){ stTab = name === "vTheme" ? "theme" : name === "vEs" ? "es" : (name === "vLogin" && stTab === "es") ? "es" : "manage"; $("stTabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === stTab)); }
+ $("stTitle").textContent = name === "vForm" ? (admin.editing ? "แก้ไขปุ่ม" : "เพิ่มปุ่มใหม่")
+  : name === "vEsForm" ? (esf.mode === "cat" ? (esf.editing ? "แก้ไขหมวด" : "เพิ่มหมวด") : (esf.editing ? "แก้ไขลิงก์" : "เพิ่มลิงก์")) : "ตั้งค่า";
 }
 function showManage(){
  if(!API) showView("vSetup");
  else if(!admin.pass){ $("loginError").hidden = true; $("adminPass").value = ""; showView("vLogin"); if(dlg.open && stTab === "manage") setTimeout(() => $("adminPass").focus(), 60); }
  else showView("vList");
 }
-function openSettings(){
+function showEs(){
+ if(!esOnline){ renderEsManager(); showView("vEs"); return; }
+ if(!admin.pass){ stTab = "es"; $("loginError").hidden = true; $("adminPass").value = ""; showView("vLogin"); setTimeout(() => $("adminPass").focus(), 60); }
+ else{ renderEsManager(); showView("vEs"); }
+}
+function openSettings(tab){
  if(typeof dlg.showModal !== "function"){ showToast("เบราว์เซอร์นี้ไม่รองรับหน้าตั้งค่า"); return; }
+ if(typeof tab === "string") stTab = tab;
  dlg.showModal();
- if(stTab === "theme") showView("vTheme"); else showManage();
+ if(stTab === "theme") showView("vTheme"); else if(stTab === "es") showEs(); else showManage();
 }
 $("stTabs").addEventListener("click", e => {
  const b = e.target.closest("button[data-tab]"); if(!b) return;
- if(b.dataset.tab === "theme") showView("vTheme"); else showManage();
+ if(b.dataset.tab === "theme") showView("vTheme"); else if(b.dataset.tab === "es") showEs(); else showManage();
 });
 function requestClose(){
- if(admin.dirty && !confirm("มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึกขึ้นออนไลน์ ต้องการปิดและทิ้งการแก้ไขหรือไม่?")) return;
+ if((admin.dirty || esDirty) && !confirm("มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึกขึ้นออนไลน์ ต้องการปิดและทิ้งการแก้ไขหรือไม่?")) return;
+ if(esDirty){ es = esLoad(); esDirty = false; renderEsBanner(); }
  admin.pass = ""; admin.dirty = false; admin.draft = []; dlg.close();
 }
 function setBusy(btn, busy, label){ btn.disabled = busy; if(label !== undefined) btn.textContent = busy ? label : btn.dataset.label; }
@@ -226,8 +239,8 @@ $("loginForm").addEventListener("submit", async e => {
  admin.pass = pw;
  await loadSystems(false);                       // โหลดข้อมูลล่าสุดก่อนแก้ไขเสมอ
  if(source === "offline"){ admin.pass = ""; renderCards(); err.textContent = ERR.network; err.hidden = false; setBusy(btn,false,""); return; }
- renderCards(); admin.draft = clone(systems); admin.dirty = false; setBusy(btn,false,"");
- renderManager(); showView("vList");
+ renderCards(); admin.draft = clone(systems); admin.dirty = false; setBusy(btn,false,""); renderEsBanner();
+ if(stTab === "es"){ renderEsManager(); showView("vEs"); } else{ renderManager(); showView("vList"); }
 });
 $("stClose").addEventListener("click", requestClose);
 $("setupClose").addEventListener("click", requestClose);
@@ -354,9 +367,10 @@ document.addEventListener("visibilitychange", async () => {
 if("serviceWorker" in navigator && location.protocol !== "file:"){ window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {})); }
 
 async function refreshSystems(){
- const before = JSON.stringify(systems);
+ const before = JSON.stringify(systems), esBefore = JSON.stringify(es);
  await loadSystems(true);
  if(JSON.stringify(systems) !== before) renderCards();
+ if(JSON.stringify(es) !== esBefore){ renderEsBanner(); if(esDlg.open) renderEsSheet(); }
 }
 
 /* ===== หน้าตา: การ์ดพาสเทล / เทกเจอร์ / โคมลอย (จำในเครื่องนี้) ===== */
@@ -473,7 +487,18 @@ $("presetRow").addEventListener("click", e => {
  theme = {...theme, ...VISUAL_DEFAULT, ...p.set}; saveTheme(); applyTheme(); showToast("ใช้ชุด “" + p.n + "” แล้ว");
 });
 
-function syncThemeUI(){
+const nameOf = (list, v) => (list.find(x => x[0] === v) || [v, v])[1];
+function syncSummaries(){
+ const set = (k, t) => { const e = document.querySelector(`[data-sum="${k}"]`); if(e) e.textContent = t; };
+ set("skin", nameOf(SKIN_LIST, theme.skin)); set("layout", nameOf(LAYOUT_LIST, theme.layout));
+ set("ics", nameOf(ICS_LIST, theme.ics) + " · " + nameOf(SHAPE_LIST, theme.shape) + " · " + {s:"เล็ก",m:"กลาง",l:"ใหญ่"}[theme.isize]);
+ set("cards", theme.cards === "plain" ? "ขาวเรียบ" : "พาสเทลน่ารัก");
+ set("lantern", theme.lantern === "on" ? "เปิด" : "ปิด"); set("motion", theme.motion === "calm" ? "ลดเอฟเฟกต์" : "ปกติ");
+}
+document.querySelectorAll("#vTheme details.st-sec").forEach(d => d.addEventListener("toggle", () => {   // เปิดทีละหมวด
+ if(d.open) document.querySelectorAll("#vTheme details.st-sec").forEach(o => { if(o !== d) o.open = false; });
+}));
+function syncThemeUI(){ syncSummaries();
  document.querySelectorAll("#vTheme [data-key]").forEach(box => box.querySelectorAll("button[data-v]").forEach(b => {
   const on = theme[box.dataset.key] === b.dataset.v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
  }));
@@ -495,8 +520,251 @@ document.querySelectorAll("#vTheme [data-key]").forEach(box => box.addEventListe
 $("themeReset").addEventListener("click", () => { theme = {...THEME_DEFAULT}; saveTheme(); applyTheme(); showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
 $("themeDone").addEventListener("click", requestClose);
 
+/* ===== บริการ สพป. (E-Service): การ์ดหน้าแรก • แผงเลื่อนขึ้น • แก้ไขในตั้งค่า (จำในเครื่องนี้) ===== */
+const ES_KEY = "banrai-hub-eservice-v1";
+const ESD = window.ESERVICE_DEFAULT || {title:"บริการ สพป.", cats:[], links:[]};
+const hostOf = u => { try{ return new URL(u).host.replace(/^www2?\./, ""); }catch{ return ""; } };
+const okColor = c => /^#[0-9a-f]{6}$/i.test(c || "");
+function esNormalize(o){
+ o = o && typeof o === "object" ? o : {};
+ const cats = [], cid = new Set();
+ (Array.isArray(o.cats) ? o.cats : []).forEach(c => {
+  if(!c || !c.id || !c.name || cid.has(String(c.id))) return; cid.add(String(c.id));
+  cats.push({id:String(c.id), name:String(c.name).slice(0,40), icon:iconPaths[c.icon] ? c.icon : "folder", color:okColor(c.color) ? c.color : "#8A6CFF"});
+ });
+ const links = [], lid = new Set();
+ if(cats.length) (Array.isArray(o.links) ? o.links : []).forEach(l => {
+  if(!l || !l.id || !l.name || !/^https?:\/\/\S+$/i.test(String(l.url || "")) || lid.has(String(l.id))) return; lid.add(String(l.id));
+  links.push({id:String(l.id), name:String(l.name).slice(0,90), short:String(l.short || "").slice(0,24), desc:String(l.desc || "").slice(0,120), url:String(l.url),
+   cat:cid.has(String(l.cat)) ? String(l.cat) : cats[0].id, icon:iconPaths[l.icon] ? l.icon : "link", color:okColor(l.color) ? l.color : "#8A6CFF", pin:!!l.pin});
+ });
+ return {title:String(o.title || "บริการ สพป.").slice(0,60), show:o.show !== false, cats, links};
+}
+/* ที่เก็บข้อมูล: ถ้าหลังบ้านรองรับ (esOnline) = เก็บออนไลน์ ทุกเครื่องเห็นเหมือนกัน (ต้องกด “บันทึกขึ้นออนไลน์”)
+   ถ้าไม่ = บันทึกอัตโนมัติเฉพาะเครื่องนี้ (localStorage) */
+const ES_CACHE_KEY = "banrai-hub-eservice-cache-v1";   // สำเนาล่าสุดจากออนไลน์ ไว้แสดงผลเร็ว/ออฟไลน์
+let esOnline = false, esDirty = false, esVersion = null, esSource = "local";
+function esLoad(){
+ for(const k of [ES_CACHE_KEY, ES_KEY]){
+  try{ const v = esNormalize(JSON.parse(localStorage.getItem(k))); if(v.cats.length) return v; }catch{}
+ }
+ return esNormalize(ESD);
+}
+let es = esLoad();
+function esSave(){
+ if(esOnline){ esDirty = true; return; }
+ try{ localStorage.setItem(ES_KEY, JSON.stringify(es)); }catch{}
+}
+function esApplyOnline(data, ver){
+ if(esDirty) return;                                   // กำลังแก้อยู่ ไม่ทับ
+ const v = data ? esNormalize(data) : null;
+ if(v && v.cats.length){
+  es = v; esVersion = ver || null; esSource = "online";
+  try{ localStorage.setItem(ES_CACHE_KEY, JSON.stringify(v)); }catch{}
+ }else{ esSource = "empty"; esVersion = ver || null; }   // ยังไม่เคยบันทึกออนไลน์ → ใช้ค่าที่มี (ค่าเริ่มต้น/ที่แก้ในเครื่อง)
+}
+const esLabel = l => l.short || l.name;
+const esIco = l => `<span class="card-icon" data-ist="${theme.ics}" style="--accent:${esc(l.color)}">${svgIcon(l.icon)}</span>`;
+
+/* การ์ด + ทางลัดบนหน้าแรก */
+function renderEsBanner(){
+ const card = $("esCard"), pins = es.links.filter(l => l.pin);
+ card.hidden = !es.show || !es.links.length; if(card.hidden) return;
+ $("esTitle").textContent = es.title; $("esSub").textContent = `E-Service · ${es.links.length} ระบบ · ${es.cats.length} หมวด`;
+ $("esRow").innerHTML = pins.map(l => `<a class="es-tile" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener noreferrer" title="${esc(l.name)}">${esIco(l)}<span class="es-lab">${esc(esLabel(l))}</span></a>`).join("")
+  + `<button type="button" class="es-tile es-more" data-es="open"><span class="card-icon" data-ist="${theme.ics}" style="--accent:var(--sk-acc)">${svgIcon("globe")}</span><span class="es-lab">ทั้งหมด ${es.links.length}</span></button>`;
+}
+
+/* แผงเลื่อนขึ้น */
+const esDlg = $("esDialog"); let esFilter = "all", esQuery = "";
+function esRowHtml(l){
+ const http = /^http:/i.test(l.url) ? ' <em title="ลิงก์นี้ไม่เข้ารหัส (http) เบราว์เซอร์อาจขึ้นคำเตือน">http</em>' : "";
+ return `<div class="es-item"><a class="es-link" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener noreferrer">${esIco(l)}<span class="es-txt"><b>${esc(l.name)}</b><small>${esc(l.desc || hostOf(l.url))}${http}</small></span><span class="es-go" aria-hidden="true">↗</span></a>`
+  + `<button type="button" class="es-pin${l.pin ? " on" : ""}" data-pin="${esc(l.id)}" aria-pressed="${l.pin}" aria-label="${l.pin ? "เอาออกจากทางลัด" : "ปักหมุดเป็นทางลัด"}" title="${l.pin ? "เอาออกจากทางลัด" : "ปักหมุดเป็นทางลัด"}">📌</button></div>`;
+}
+function renderEsSheet(){
+ $("esDlgTitle").textContent = es.title; $("esDlgSub").textContent = `${es.links.length} ระบบ · ${es.cats.length} หมวด`;
+ const pins = es.links.filter(l => l.pin).length, chip = (v, t, n) => `<button type="button" class="es-chip${esFilter === v ? " on" : ""}" data-f="${esc(v)}">${t}<i>${n}</i></button>`;
+ $("esChips").innerHTML = chip("all","ทั้งหมด",es.links.length) + chip("pin","📌 ปักหมุด",pins) + es.cats.map(c => chip(c.id, esc(c.name), es.links.filter(l => l.cat === c.id).length)).join("");
+ const q = esQuery.trim().toLocaleLowerCase("th"); let html = "", shown = 0;
+ es.cats.forEach(c => {
+  if(esFilter !== "all" && esFilter !== "pin" && esFilter !== c.id) return;
+  const items = es.links.filter(l => l.cat === c.id && (esFilter !== "pin" || l.pin) && (!q || (l.name + " " + l.short + " " + l.desc + " " + hostOf(l.url) + " " + c.name).toLocaleLowerCase("th").includes(q)));
+  if(!items.length) return; shown += items.length;
+  html += `<section class="es-group"><h3 class="es-gh"><span class="es-gb" style="--c:${esc(c.color)}">${svgIcon(c.icon)}</span>${esc(c.name)}<small>${items.length}</small></h3><div class="es-list">${items.map(esRowHtml).join("")}</div></section>`;
+ });
+ $("esBody").innerHTML = shown ? html : `<p class="es-none">${esFilter === "pin" && !q ? "ยังไม่มีทางลัด — แตะ 📌 ที่รายการเพื่อปักหมุด" : "ไม่พบบริการที่ค้นหา"}</p>`;
+}
+function openEs(){
+ if(typeof esDlg.showModal !== "function"){ showToast("เบราว์เซอร์นี้ไม่รองรับแผงบริการ"); return; }
+ esFilter = "all"; esQuery = ""; $("esSearch").value = ""; renderEsSheet(); esDlg.showModal(); $("esBody").scrollTop = 0;
+}
+$("esOpen").addEventListener("click", openEs);
+$("esRow").addEventListener("click", e => { if(e.target.closest('[data-es="open"]')) openEs(); });
+$("esClose").addEventListener("click", () => esDlg.close());
+esDlg.addEventListener("click", e => { if(e.target === esDlg) esDlg.close(); });
+$("esManage").addEventListener("click", () => { esDlg.close(); openSettings("es"); });
+$("esSearch").addEventListener("input", e => { esQuery = e.target.value; renderEsSheet(); });
+$("esChips").addEventListener("click", e => { const b = e.target.closest("button[data-f]"); if(b){ esFilter = b.dataset.f; renderEsSheet(); } });
+$("esBody").addEventListener("click", e => {
+ const b = e.target.closest("button[data-pin]"); if(!b) return;
+ const l = es.links.find(x => x.id === b.dataset.pin); if(!l) return;
+ l.pin = !l.pin; esSave(); renderEsSheet(); renderEsBanner(); showToast(l.pin ? "ปักหมุดเป็นทางลัดแล้ว" : "เอาออกจากทางลัดแล้ว");
+});
+
+/* ตั้งค่า: จัดการลิงก์/หมวด */
+function renderEsManager(){
+ $("esShowSeg").querySelectorAll("button").forEach(b => { const on = (b.dataset.v === "1") === es.show; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+ if(document.activeElement !== $("esTitleInput")) $("esTitleInput").value = es.title;
+ let html = "";
+ es.cats.forEach((c, ci) => {
+  const items = es.links.filter(l => l.cat === c.id);
+  html += `<div class="mg-group es-mg" data-cat="${esc(c.id)}"><div class="es-cat-h" style="--c:${esc(c.color)}"><span class="es-gb" style="--c:${esc(c.color)}">${svgIcon(c.icon)}</span><b>${esc(c.name)}</b><small>${items.length}</small>`
+   + `<span class="mg-act"><button type="button" data-cact="up" aria-label="เลื่อนหมวดขึ้น" ${ci ? "" : "disabled"}>↑</button><button type="button" data-cact="down" aria-label="เลื่อนหมวดลง" ${ci < es.cats.length - 1 ? "" : "disabled"}>↓</button><button type="button" data-cact="edit" aria-label="แก้ไขหมวด">✎</button><button type="button" class="danger" data-cact="del" aria-label="ลบหมวด">🗑</button></span></div>`;
+  if(!items.length) html += '<p class="mg-empty">ยังไม่มีลิงก์ในหมวดนี้</p>';
+  items.forEach((l, i) => {
+   html += `<div class="mg-row" data-id="${esc(l.id)}"><span class="mg-ic" style="--c:${esc(l.color)}">${svgIcon(l.icon)}</span><div class="mg-txt"><b>${esc(l.name)}</b><small>${esc(hostOf(l.url))}</small></div>`
+    + `<div class="mg-act"><button type="button" class="${l.pin ? "is-on" : ""}" data-act="pin" aria-pressed="${l.pin}" title="ปักหมุดเป็นทางลัด">📌</button><button type="button" data-act="up" aria-label="เลื่อนขึ้น" ${i ? "" : "disabled"}>↑</button><button type="button" data-act="down" aria-label="เลื่อนลง" ${i < items.length - 1 ? "" : "disabled"}>↓</button><button type="button" data-act="edit" aria-label="แก้ไข">✎</button><button type="button" class="danger" data-act="del" aria-label="ลบ">🗑</button></div></div>`;
+  });
+  html += "</div>";
+ });
+ $("esMgList").innerHTML = html;
+ renderEsBar();
+}
+function renderEsBar(){
+ $("esAuto").hidden = esOnline; $("esSaveOnline").hidden = !esOnline; $("esDirtyNote").hidden = !esOnline;
+ $("esSaveOnline").disabled = !(esDirty || esSource === "empty");
+ $("esDirtyNote").textContent = esDirty ? "● มีการเปลี่ยนแปลงที่ยังไม่บันทึก" : (esSource === "empty" ? "ยังไม่มีข้อมูลออนไลน์" : "ข้อมูลตรงกับที่อยู่ออนไลน์");
+ $("esDirtyNote").classList.toggle("is-dirty", esDirty);
+ const n = $("esNotice"); n.hidden = false;
+ if(!esOnline) n.textContent = "โหมดในเครื่อง: หลังบ้านยังไม่รองรับบริการ สพป. จึงบันทึกเฉพาะเครื่องนี้ (อัปเดต Code.gs เพื่อให้ทุกเครื่องเห็นเหมือนกัน — ดู apps-script/UPDATE-ESERVICE.md)";
+ else if(esSource === "empty") n.textContent = "ยังไม่มีข้อมูลบริการ สพป. ออนไลน์ — กด “บันทึกขึ้นออนไลน์” ครั้งแรกเพื่อส่งรายการนี้ขึ้นชีต จากนั้นทุกเครื่องจะเห็นเหมือนกัน";
+ else n.textContent = "บันทึกออนไลน์: ทุกเครื่องเห็นข้อมูลเดียวกัน — แก้ไขแล้วกด “บันทึกขึ้นออนไลน์” จึงจะมีผลกับเครื่องอื่น";
+ $("esBackupHint").innerHTML = esOnline ? "ใช้สำรองหรือย้ายข้อมูลได้ (นำเข้าแล้วต้องกด “บันทึกขึ้นออนไลน์”) หรือวางทับ <code>eservice-data.js</code> เป็นค่าเริ่มต้นสำรอง" : "ค่าที่แก้ในแอปบันทึกเฉพาะเครื่องนี้ ถ้าอยากให้ทุกเครื่องเห็นเหมือนกัน ให้กด “คัดลอกเป็นไฟล์ค่าเริ่มต้น” แล้ววางทับ <code>eservice-data.js</code> ใน repo";
+}
+async function esSaveOnlineNow(){
+ const btn = $("esSaveOnline"); btn.disabled = true; btn.textContent = "กำลังบันทึก...";
+ const r = await apiPost({action:"esSave", password:admin.pass, eservice:esExportObj(), baseVersion:esVersion});
+ btn.textContent = "บันทึกขึ้นออนไลน์";
+ if(r.ok){
+  es = esNormalize(r.eservice); esVersion = r.version || null; esSource = "online"; esDirty = false;
+  try{ localStorage.setItem(ES_CACHE_KEY, JSON.stringify(es)); }catch{}
+  renderEsManager(); renderEsBanner(); if(esDlg.open) renderEsSheet(); showToast("บันทึกขึ้นออนไลน์เรียบร้อยแล้ว ✓"); return;
+ }
+ if(r.error === "version_conflict"){
+  if(confirm("ข้อมูลบริการ สพป. ออนไลน์ถูกแก้ไขโดยผู้อื่นไปก่อนแล้ว\nต้องการโหลดข้อมูลล่าสุดมาแทนที่การแก้ไขของคุณหรือไม่?")){ esDirty = false; await loadSystems(false); renderEsManager(); renderEsBanner(); }
+  renderEsBar(); return;
+ }
+ if(r.error === "wrong_password" || r.error === "locked") admin.pass = "";
+ alert("บันทึกไม่สำเร็จ: " + (ERR[r.error] || r.error || "ไม่ทราบสาเหตุ")); renderEsBar();
+}
+$("esSaveOnline").addEventListener("click", esSaveOnlineNow);
+function esChanged(){ esSave(); renderEsManager(); renderEsBanner(); }
+const swapIn = (arr, i, dir, same) => { let j = i + dir; while(j >= 0 && j < arr.length && !same(arr[j])) j += dir; if(j >= 0 && j < arr.length){ [arr[i], arr[j]] = [arr[j], arr[i]]; return true; } return false; };
+$("esMgList").addEventListener("click", e => {
+ const b = e.target.closest("button[data-act],button[data-cact]"); if(!b) return;
+ if(b.dataset.cact){
+  const id = b.closest(".es-mg").dataset.cat, i = es.cats.findIndex(c => c.id === id), act = b.dataset.cact; if(i < 0) return;
+  if(act === "edit") openEsForm("cat", id);
+  else if(act === "del"){
+   if(es.cats.length <= 1){ showToast("ต้องมีอย่างน้อย 1 หมวด"); return; }
+   const n = es.links.filter(l => l.cat === id).length, to = es.cats.find(c => c.id !== id);
+   if(confirm(`ลบหมวด “${es.cats[i].name}” ใช่หรือไม่?` + (n ? `\n(ลิงก์ ${n} รายการจะย้ายไปหมวด “${to.name}”)` : ""))){ es.links.forEach(l => { if(l.cat === id) l.cat = to.id; }); es.cats.splice(i, 1); esChanged(); }
+  }else if(swapIn(es.cats, i, act === "up" ? -1 : 1, () => true)) esChanged();
+  return;
+ }
+ const id = b.closest(".mg-row").dataset.id, i = es.links.findIndex(l => l.id === id), act = b.dataset.act; if(i < 0) return;
+ if(act === "edit") openEsForm("link", id);
+ else if(act === "pin"){ es.links[i].pin = !es.links[i].pin; esChanged(); }
+ else if(act === "del"){ if(confirm(`ลบลิงก์ “${es.links[i].name}” ใช่หรือไม่?`)){ es.links.splice(i, 1); esChanged(); } }
+ else if(swapIn(es.links, i, act === "up" ? -1 : 1, x => x.cat === es.links[i].cat)) esChanged();
+});
+$("esShowSeg").addEventListener("click", e => { const b = e.target.closest("button[data-v]"); if(b){ es.show = b.dataset.v === "1"; esChanged(); } });
+$("esTitleInput").addEventListener("input", e => { es.title = e.target.value.trim().slice(0,60) || "บริการ สพป."; esSave(); renderEsBanner(); });
+$("esDone").addEventListener("click", requestClose);
+$("esAddLink").addEventListener("click", () => openEsForm("link", null));
+$("esAddCat").addEventListener("click", () => openEsForm("cat", null));
+
+/* ฟอร์มเพิ่ม/แก้ไข */
+function buildEsPickers(){
+ $("esIconPicker").innerHTML = Object.keys(iconPaths).filter(k => k !== "gear").map(k => `<button type="button" data-icon="${k}" title="${k}" aria-label="ไอคอน ${k}">${svgIcon(k)}</button>`).join("");
+ const cb = c => `<button type="button" data-color="${c}" style="--c:${c}" aria-label="สี ${c}"></button>`;
+ $("esColorPicker").innerHTML = COLORS.map(cb).join("") + '<span class="pal-sep"></span>' + PASTELS.map(cb).join("");
+}
+function esFormData(){ return {name:$("esfName").value.trim(), url:$("esfUrl").value.trim(), short:$("esfShort").value.trim(), desc:$("esfDesc").value.trim(), cat:$("esfCat").value, pin:$("esfPin").checked, icon:esf.icon, color:esf.color}; }
+function syncEsForm(){
+ $("esIconPicker").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.icon === esf.icon));
+ $("esColorPicker").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.color.toLowerCase() === esf.color.toLowerCase()));
+ $("esfColorCustom").value = esf.color;
+ const d = esFormData();
+ if(esf.mode === "cat") $("esPv").innerHTML = `<div class="es-item"><div class="es-link"><span class="es-gb" style="--c:${esc(d.color)}">${svgIcon(d.icon)}</span><span class="es-txt"><b>${esc(d.name || "ชื่อหมวด")}</b><small>ตัวอย่างหัวข้อหมวด</small></span></div></div>`;
+ else $("esPv").innerHTML = esRowHtml({id:"x", name:d.name || "ชื่อบริการ", short:d.short, desc:d.desc, url:d.url || "https://example.go.th", icon:d.icon, color:d.color, pin:d.pin});
+}
+function openEsForm(mode, id){
+ esf.mode = mode; esf.editing = id;
+ const o = id ? (mode === "cat" ? es.cats : es.links).find(x => x.id === id) : null;
+ if(mode === "link" && !es.cats.length){ showToast("เพิ่มหมวดก่อน"); return; }
+ $("esfNameLbl").textContent = mode === "cat" ? "ชื่อหมวด *" : "ชื่อบริการ *";
+ $("esfName").value = o ? o.name : ""; $("esfLinkOnly").hidden = mode === "cat";
+ $("esfUrl").required = mode === "link";
+ $("esfCat").innerHTML = es.cats.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+ $("esfUrl").value = o && o.url || ""; $("esfShort").value = o && o.short || ""; $("esfDesc").value = o && o.desc || "";
+ $("esfCat").value = o && o.cat || es.cats[0].id; $("esfPin").checked = !!(o && o.pin);
+ esf.icon = o ? o.icon : (mode === "cat" ? "folder" : "link"); esf.color = o ? o.color : (mode === "cat" ? COLORS[11] : COLORS[0]);
+ $("esfError").hidden = true; syncEsForm(); showView("vEsForm");
+}
+$("esIconPicker").addEventListener("click", e => { const b = e.target.closest("button[data-icon]"); if(b){ esf.icon = b.dataset.icon; syncEsForm(); } });
+$("esColorPicker").addEventListener("click", e => { const b = e.target.closest("button[data-color]"); if(b){ esf.color = b.dataset.color; syncEsForm(); } });
+$("esfColorCustom").addEventListener("input", e => { esf.color = e.target.value; syncEsForm(); });
+["esfName","esfUrl","esfShort","esfDesc"].forEach(id => $(id).addEventListener("input", syncEsForm));
+$("esfPin").addEventListener("change", syncEsForm);
+$("esfCancel").addEventListener("click", () => { renderEsManager(); showView("vEs"); });
+$("esForm").addEventListener("submit", e => {
+ e.preventDefault(); const d = esFormData(), err = $("esfError");
+ if(!d.name){ err.textContent = "กรุณาใส่ชื่อ"; err.hidden = false; return; }
+ if(esf.mode === "cat"){
+  if(esf.editing){ const c = es.cats.find(x => x.id === esf.editing); if(c){ c.name = d.name.slice(0,40); c.icon = d.icon; c.color = d.color; } }
+  else es.cats.push({id:newId(), name:d.name.slice(0,40), icon:d.icon, color:d.color});
+ }else{
+  if(!/^https?:\/\/\S+$/i.test(d.url)){ err.textContent = "ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://"; err.hidden = false; return; }
+  const rec = {name:d.name, short:d.short, desc:d.desc, url:d.url, cat:d.cat, icon:d.icon, color:d.color, pin:d.pin};
+  if(esf.editing){ const i = es.links.findIndex(x => x.id === esf.editing); if(i >= 0) es.links[i] = {...es.links[i], ...rec}; }
+  else es.links.push({id:newId(), ...rec});
+ }
+ esChanged(); showView("vEs"); showToast("บันทึกแล้ว ✓");
+});
+
+/* สำรอง / นำเข้า / รีเซ็ต */
+async function copyText(t){
+ try{ await navigator.clipboard.writeText(t); return true; }catch{}
+ const ta = $("esJson"); ta.value = t; ta.focus(); ta.select();
+ try{ return document.execCommand("copy"); }catch{ return false; }
+}
+const esExportObj = () => ({title:es.title, show:es.show, cats:es.cats, links:es.links});
+$("esExport").addEventListener("click", async () => {
+ const t = JSON.stringify(esExportObj(), null, 1); $("esJson").value = t;
+ showToast(await copyText(t) ? "คัดลอกข้อมูลแล้ว" : "เลือกข้อความแล้วคัดลอกเอง");
+});
+$("esExportFile").addEventListener("click", async () => {
+ const t = "window.ESERVICE_DEFAULT = " + JSON.stringify(esExportObj(), null, 1) + ";\n"; $("esJson").value = t;
+ showToast(await copyText(t) ? "คัดลอกแล้ว — วางทับ eservice-data.js" : "เลือกข้อความแล้วคัดลอกเอง");
+});
+$("esImport").addEventListener("click", () => {
+ const raw = $("esJson").value, a = raw.indexOf("{"), b = raw.lastIndexOf("}");
+ try{
+  const v = esNormalize(JSON.parse(raw.slice(a, b + 1)));
+  if(!v.cats.length || !v.links.length) throw new Error("empty");
+  if(!confirm(`นำเข้า ${v.links.length} ลิงก์ ${v.cats.length} หมวด แทนที่ข้อมูลปัจจุบันใช่หรือไม่?`)) return;
+  es = v; esChanged(); showToast("นำเข้าเรียบร้อยแล้ว ✓");
+ }catch{ showToast("ข้อมูลไม่ถูกต้อง นำเข้าไม่ได้"); }
+});
+$("esReset").addEventListener("click", () => {
+ if(!confirm("รีเซ็ตบริการ สพป. ทั้งหมดเป็นค่าเริ่มต้นของโรงเรียน?\n(ลิงก์ที่เพิ่ม/แก้ไขในเครื่องนี้จะหาย)")) return;
+ es = esNormalize(ESD); esChanged(); $("esJson").value = ""; showToast("รีเซ็ตแล้ว");
+});
+
 /* ===== เริ่มทำงาน ===== */
-buildPickers(); buildPickers2(); buildThemePreview(); applyTheme();
+buildPickers(); buildPickers2(); buildEsPickers(); buildThemePreview(); applyTheme(); renderEsBanner();
 const cached = API ? readCache() : null;
 if(cached){            // มีของเดิม: แสดงทันที แล้วอัปเดตจากออนไลน์เงียบๆ ข้างหลัง
  systems = cached.systems; sysVersion = cached.version; source = "cache"; renderCards();
@@ -504,7 +772,7 @@ if(cached){            // มีของเดิม: แสดงทันท�
 }else{                 // เปิดครั้งแรก: โชว์โครงกระดูกระหว่างรอ
  showSkeleton();
  loadSystems(false).then(() => {
-  renderCards();
+  renderCards(); renderEsBanner();
   if(source === "offline") showToast("เชื่อมต่อออนไลน์ไม่ได้ แสดงรายการเริ่มต้นแทน");
  });
 }
