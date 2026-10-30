@@ -14,8 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>try{var _t=JSON.parse(localStorage.getItem("banrai-hub-theme-v1")||"{}"),_r=document.documentElement;["cards","tint","tex","lantern"].forEach(function(k){if(_t[k])_r.dataset[k]=_t[k]})}catch(e){}</script>
+  <script>try{var _t=JSON.parse(localStorage.getItem("banrai-hub-theme-v1")||"{}"),_r=document.documentElement;["cards","tint","tex","lantern","skin","layout","ics","shape","isize","iw","accent","motion"].forEach(function(k){if(_t[k])_r.dataset[k]=_t[k]});if(_t.skin==="auto")_r.dataset.skin=matchMedia("(prefers-color-scheme: dark)").matches?"midnight":"classic"}catch(e){}</script>
   <link rel="stylesheet" href="./style.css?v=pastel1">
+  <link rel="stylesheet" href="./themes.css?v=themes1">
 </head>
 <body>
 
@@ -154,7 +155,33 @@
     <div class="st-tabs" id="stTabs" role="tablist"><button type="button" role="tab" data-tab="theme">🎨 หน้าตา</button><button type="button" role="tab" data-tab="manage">🧩 จัดการปุ่ม</button></div>
 
     <section id="vTheme" hidden>
-      <div class="form-preview theme-prev-box"><span class="form-hint">ตัวอย่างการ์ด (เปลี่ยนแล้วเห็นทันที)</span><div class="theme-preview" id="themePreview" aria-hidden="true"></div></div>
+      <div class="form-preview theme-prev-box"><span class="form-hint">ตัวอย่างสด — เปลี่ยนแล้วเห็นทันที</span><div class="theme-preview" id="themePreview" aria-hidden="true"></div></div>
+
+      <div class="st-card">
+        <h3>⚡ ชุดสำเร็จรูป</h3>
+        <p class="st-sub">แตะครั้งเดียวเปลี่ยนทั้งหน้าตา แล้วปรับแต่งต่อได้ด้านล่าง</p>
+        <div class="preset-row" id="presetRow"></div>
+      </div>
+
+      <div class="st-card">
+        <h3>🎭 ธีมสี</h3>
+        <div class="opt-grid" data-key="skin" id="skinGrid"></div>
+        <div class="st-field mt"><span>สีของปุ่มระบบ</span><div class="seg" data-key="accent"><button type="button" data-v="own">ตามสีแต่ละปุ่ม</button><button type="button" data-v="theme">ไล่เฉดตามธีม</button></div></div>
+      </div>
+
+      <div class="st-card">
+        <h3>🧩 รูปแบบปุ่ม</h3>
+        <div class="opt-grid" data-key="layout" id="layoutGrid"></div>
+        <p class="st-hint">“กริดไอโฟน” แสดงเป็นไอคอนแอปเรียงกันเหมือนหน้าจอโฮม • “กระเบื้องสี” จะใช้ไอคอนกระจกขาวบนพื้นสีเต็ม</p>
+      </div>
+
+      <div class="st-card">
+        <h3>✨ สไตล์ไอคอน</h3>
+        <div class="opt-grid" data-key="ics" id="icsGrid"></div>
+        <div class="st-field mt"><span>รูปทรงไอคอน</span><div class="opt-grid small" data-key="shape" id="shapeGrid"></div></div>
+        <div class="st-field mt"><span>ขนาดไอคอน</span><div class="seg" data-key="isize"><button type="button" data-v="s">เล็ก</button><button type="button" data-v="m">กลาง</button><button type="button" data-v="l">ใหญ่</button></div></div>
+        <div class="st-field mt"><span>ความหนาเส้น</span><div class="seg" data-key="iw"><button type="button" data-v="thin">บาง</button><button type="button" data-v="reg">ปกติ</button><button type="button" data-v="bold">หนา</button></div></div>
+      </div>
 
       <div class="st-card">
         <h3>การ์ดสีพาสเทล</h3>
@@ -173,7 +200,12 @@
           <div class="st-field"><span>จำนวนโคม</span><div class="seg" data-key="count"><button type="button" data-v="low">น้อย</button><button type="button" data-v="mid">กลาง</button><button type="button" data-v="high">เยอะ</button></div></div>
           <div class="st-field"><span>ความดิ้น</span><div class="seg" data-key="wig"><button type="button" data-v="soft">เบาๆ</button><button type="button" data-v="mid">ปกติ</button><button type="button" data-v="strong">ดิ้นแรง</button></div></div>
         </div>
-        <p class="st-hint">การตั้งค่าหน้าตาจำไว้เฉพาะเครื่อง/เบราว์เซอร์นี้</p>
+      </div>
+
+      <div class="st-card">
+        <h3>⚡ การเคลื่อนไหว</h3>
+        <div class="st-field"><span>เอฟเฟกต์ในหน้าเว็บ</span><div class="seg" data-key="motion"><button type="button" data-v="on">ปกติ</button><button type="button" data-v="calm">ลดเอฟเฟกต์ (เครื่องช้า/ประหยัดแบต)</button></div></div>
+        <p class="st-hint">การตั้งค่าหน้าตาทั้งหมดจำไว้เฉพาะเครื่อง/เบราว์เซอร์นี้ ส่วนแบบเดิมเลือก “คลาสสิก (เดิม)” หรือกด “คืนค่าเริ่มต้น” ได้ตลอด</p>
       </div>
 
       <div class="st-actions between"><button class="st-btn ghost" id="themeReset" type="button">คืนค่าเริ่มต้น</button><button class="st-btn primary" id="themeDone" type="button">เสร็จแล้ว</button></div>
@@ -235,6 +267,6 @@
     <button class="dialog-done" id="dialogDone">เข้าใจแล้ว</button>
   </dialog>
   <script src="./config.js"></script>
-  <script src="./app.js?v=pastel1"></script>
+  <script src="./app.js?v=themes1"></script>
 </body>
 </html>

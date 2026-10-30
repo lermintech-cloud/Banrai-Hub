@@ -117,7 +117,7 @@ function getFavorites(){try{return JSON.parse(localStorage.getItem(favoritesKey)
 function saveFavorites(ids){try{localStorage.setItem(favoritesKey,JSON.stringify(ids))}catch{}}
 
 function cardInner(s){
- return `<div class="card-head"><span class="card-icon">${svgIcon(s.icon)}</span><button type="button" class="favorite-btn" title="รายการโปรด">☆</button></div><h4 class="card-title">${esc(s.name)}</h4><p class="card-description">${esc(s.desc)}</p><div class="card-footer"><span class="card-tag"${s.tag?"":" hidden"}>${esc(s.tag)}</span><span class="card-open" aria-hidden="true">↗</span></div>`;
+ return `<div class="card-head"><span class="card-icon" data-ist="${theme.ics}">${svgIcon(s.icon)}</span><button type="button" class="favorite-btn" title="รายการโปรด">☆</button></div><h4 class="card-title">${esc(s.name)}</h4><p class="card-description">${esc(s.desc)}</p><div class="card-footer"><span class="card-tag"${s.tag?"":" hidden"}>${esc(s.tag)}</span><span class="card-open" aria-hidden="true">↗</span></div>`;
 }
 function showSkeleton(){
  const n = {student:2,academic:4,operations:3};
@@ -361,8 +361,13 @@ async function refreshSystems(){
 
 /* ===== หน้าตา: การ์ดพาสเทล / เทกเจอร์ / โคมลอย (จำในเครื่องนี้) ===== */
 const THEME_KEY = "banrai-hub-theme-v1";
-const THEME_OPTS = {cards:["pastel","plain"],tint:["soft","mid","vivid"],tex:["none","dots","grain","gingham","linen"],lantern:["on","off"],count:["low","mid","high"],wig:["soft","mid","strong"]};
-const THEME_DEFAULT = {cards:"pastel",tint:"mid",tex:"dots",lantern:"on",count:"mid",wig:"mid"};
+const THEME_OPTS = {cards:["pastel","plain"],tint:["soft","mid","vivid"],tex:["none","dots","grain","gingham","linen"],lantern:["on","off"],count:["low","mid","high"],wig:["soft","mid","strong"],
+ skin:["classic","auto","midnight","aurora","candy","sakura","forest","sunset","graphite"],layout:["card","grid","list","tile"],
+ ics:["classic","ios","glass","jelly","tonal","neu","neon","outline"],shape:["auto","squircle","circle","rounded","square","leaf"],
+ isize:["s","m","l"],iw:["thin","reg","bold"],accent:["own","theme"],motion:["on","calm"]};
+const THEME_DEFAULT = {cards:"pastel",tint:"mid",tex:"dots",lantern:"on",count:"mid",wig:"mid",skin:"classic",layout:"card",ics:"classic",shape:"auto",isize:"m",iw:"reg",accent:"own",motion:"on"};
+const ROOT_KEYS = ["cards","tint","tex","lantern","skin","layout","ics","shape","isize","iw","accent","motion"];   // ค่าที่ส่งให้ CSS ผ่าน data-* บน <html>
+const VISUAL_DEFAULT = (({lantern,count,wig,...v}) => v)(THEME_DEFAULT);                                         // ชุดสำเร็จรูปไม่แตะโคมลอย
 const LANTERN_N = {low:5,mid:8,high:12}, LANTERN_WIG = {soft:.6,mid:1,strong:1.7};
 function readTheme(){
  let o = {}; try{ o = JSON.parse(localStorage.getItem(THEME_KEY)) || {}; }catch{}
@@ -379,7 +384,7 @@ const THEME_SAMPLES = [
  {name:"ปฏิทินวิชาการ",desc:"กิจกรรมสำคัญของโรงเรียน",tag:"ปฏิทิน",icon:"calendar",color:"#16B364"}
 ];
 function buildThemePreview(){
- $("themePreview").innerHTML = THEME_SAMPLES.map(s => `<div class="system-card preview" style="--accent:${s.color}">${cardInner(s)}</div>`).join("");
+ $("themePreview").innerHTML = THEME_SAMPLES.map((s, i) => `<div class="system-card preview" style="--accent:${s.color};--i:${i*4}">${cardInner(s)}</div>`).join("");
 }
 
 /* โคมลอยดิ้นในแบนเนอร์ */
@@ -417,28 +422,81 @@ let lanternResizeT;
 window.addEventListener("resize", () => { clearTimeout(lanternResizeT); lanternResizeT = setTimeout(() => { sizeLanternLayer(); buildLanterns(); }, 150); });
 if(window.ResizeObserver && heroEl) new ResizeObserver(sizeLanternLayer).observe(heroEl);
 
+/* ===== ธีมสี / สไตล์ไอคอน / รูปแบบปุ่ม: ตัวเลือกแบบมีภาพรีวิว ===== */
+const metaTheme = document.querySelector('meta[name="theme-color"]'), META0 = metaTheme ? metaTheme.content : "";
+const SKIN_META = {midnight:"#151C45",aurora:"#4F46E5",candy:"#9BDEFF",sakura:"#EC4899",forest:"#064E3B",sunset:"#F97316",graphite:"#18181B"};
+const mqDark = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : {matches:false};
+const resolveSkin = v => v === "auto" ? (mqDark.matches ? "midnight" : "classic") : v;
+if(mqDark.addEventListener) mqDark.addEventListener("change", () => { if(theme.skin === "auto") applyTheme(); });
+
+const SKIN_LIST = [["classic","คลาสสิก (เดิม)"],["auto","ตามระบบ"],["midnight","มิดไนต์"],["aurora","ออโรร่า"],["candy","แคนดี้"],["sakura","ซากุระ"],["forest","ฟอเรสต์"],["sunset","ซันเซ็ต"],["graphite","กราไฟต์"]];
+const LAYOUT_LIST = [["card","การ์ด (เดิม)"],["grid","กริดไอโฟน"],["list","รายการ"],["tile","กระเบื้องสี"]];
+const ICS_LIST = [["classic","คลาสสิก (เดิม)"],["ios","ไอโฟน iOS"],["glass","กระจกฝ้า"],["jelly","เจลลี่ 3D"],["tonal","โทนอ่อน"],["neu","นูนนุ่ม"],["neon","นีออน"],["outline","เส้นมินิมอล"]];
+const SHAPE_LIST = [["auto","ตามสไตล์","36%"],["squircle","สควิร์เคิล","22.4%"],["circle","วงกลม","50%"],["rounded","มนมาก","34%"],["square","เหลี่ยมมน","12%"],["leaf","ใบไม้","50% 12% 50% 12%"]];
+const ICS_DEMO = {   // สีตัวอย่าง + พื้นหลังตัวอย่างของแต่ละสไตล์
+ classic:["#E02CC0","linear-gradient(135deg,#F3E9FF,#FFE6F4)"], ios:["#0A84FF","linear-gradient(135deg,#DDEBFF,#F3F6FF)"],
+ glass:["#8B5CF6","linear-gradient(135deg,#9BD7FF,#D3B9FF 55%,#FFB9DA)"], jelly:["#FF3D81","linear-gradient(135deg,#FFE3EE,#FFF3F8)"],
+ tonal:["#16B364","var(--sk-surf2)"], neu:["#FF8A00","var(--sk-surf)"], neon:["#22D3EE","#10142B"], outline:["#3D5AFE","var(--sk-surf2)"]
+};
+const PRESETS = [
+ {id:"classic",n:"เดิม",set:{}},
+ {id:"iphone",n:"iPhone",set:{skin:"aurora",layout:"grid",ics:"ios",shape:"squircle"}},
+ {id:"glass",n:"กระจกออโรร่า",set:{skin:"aurora",ics:"glass",tint:"soft",tex:"none"}},
+ {id:"neon",n:"มิดไนต์นีออน",set:{skin:"midnight",ics:"neon",shape:"squircle",tex:"none"}},
+ {id:"neu",n:"นูนนุ่มแคนดี้",set:{skin:"candy",ics:"neu",tint:"soft",tex:"none"}},
+ {id:"jelly",n:"เจลลี่ซากุระ",set:{skin:"sakura",ics:"jelly",tint:"vivid"}},
+ {id:"minimal",n:"มินิมอลโปร",set:{skin:"graphite",layout:"list",ics:"outline",cards:"plain",accent:"theme"}},
+ {id:"tile",n:"กระเบื้องซันเซ็ต",set:{skin:"sunset",layout:"tile",tex:"none"}},
+ {id:"nature",n:"ธรรมชาติ",set:{skin:"forest",ics:"tonal",accent:"theme",tex:"grain"}}
+];
+const optBtn = (v, inner, name, cls) => `<button type="button" class="opt${cls ? " " + cls : ""}" data-v="${v}" aria-label="${name}">${inner}<span class="opt-name">${name}</span></button>`;
+const skinMock = pv => `<div class="skin-pv sk-mock" data-pv="${pv}"><b class="sk-hero"></b><span class="sk-row"><i></i><i></i></span><span class="sk-row"><i></i><i></i></span></div>`;
+const skinThumb = v => v === "auto" ? `<div class="sk-auto">${skinMock("classic")}${skinMock("midnight")}</div>` : skinMock(v);
+const LAYOUT_THUMB = {card:'<div class="lo-pv lo-card"><i></i><i></i><i></i><i></i></div>',grid:'<div class="lo-pv lo-grid">'+"<i></i>".repeat(8)+'</div>',list:'<div class="lo-pv lo-list"><i></i><i></i><i></i></div>',tile:'<div class="lo-pv lo-tile"><i></i><i></i><i></i><i></i></div>'};
+const icsThumb = v => `<div class="ics-bg" style="background:${ICS_DEMO[v][1]}"><span class="pv-ic" data-ist="${v}" style="--accent:${ICS_DEMO[v][0]}">${svgIcon("users")}</span></div>`;
+const shapeThumb = (v, r) => `<div class="shape-bg"><span class="pv-ic" data-ist="tonal" style="--accent:#6366F1;--ic-r:${r};width:34px;height:34px">${svgIcon("star")}</span></div>`;
+function presetThumb(p){
+ const t = {...VISUAL_DEFAULT, ...p.set}, r = t.shape === "auto" ? "" : `--ic-r:${SHAPE_LIST.find(x => x[0] === t.shape)[2]};`;
+ const ics = [["users","#0A84FF"],["calendarcheck","#FF3D81"],["book","#16B364"]].map(([ic,c]) => `<i class="pv-ic" data-ist="${t.ics}" style="--accent:${c};${r}">${svgIcon(ic)}</i>`).join("");
+ return `<div class="skin-pv pre-pv" data-pv="${resolveSkin(t.skin)}"><span class="pre-hero"></span><span class="pre-ics">${ics}</span></div>`;
+}
+function buildPickers2(){
+ $("skinGrid").innerHTML = SKIN_LIST.map(([v,n]) => optBtn(v, skinThumb(v), n)).join("");
+ $("layoutGrid").innerHTML = LAYOUT_LIST.map(([v,n]) => optBtn(v, LAYOUT_THUMB[v], n)).join("");
+ $("icsGrid").innerHTML = ICS_LIST.map(([v,n]) => optBtn(v, icsThumb(v), n)).join("");
+ $("shapeGrid").innerHTML = SHAPE_LIST.map(([v,n,r]) => optBtn(v, shapeThumb(v,r), n, "small")).join("");
+ $("presetRow").innerHTML = PRESETS.map(p => `<button type="button" class="opt preset" data-preset="${p.id}" aria-label="${p.n}">${presetThumb(p)}<span class="opt-name">${p.n}</span></button>`).join("");
+}
+$("presetRow").addEventListener("click", e => {
+ const b = e.target.closest("button[data-preset]"); if(!b) return;
+ const p = PRESETS.find(x => x.id === b.dataset.preset); if(!p) return;
+ theme = {...theme, ...VISUAL_DEFAULT, ...p.set}; saveTheme(); applyTheme(); showToast("ใช้ชุด “" + p.n + "” แล้ว");
+});
+
 function syncThemeUI(){
- document.querySelectorAll("#vTheme .seg").forEach(seg => seg.querySelectorAll("button").forEach(b => {
-  const on = theme[seg.dataset.key] === b.dataset.v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
+ document.querySelectorAll("#vTheme [data-key]").forEach(box => box.querySelectorAll("button[data-v]").forEach(b => {
+  const on = theme[box.dataset.key] === b.dataset.v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
  }));
  $("cardOpts").classList.toggle("is-off", theme.cards === "plain");
  $("lanternOpts").classList.toggle("is-off", theme.lantern === "off");
 }
 function applyTheme(){
  const r = document.documentElement;
- r.dataset.cards = theme.cards; r.dataset.tint = theme.tint; r.dataset.tex = theme.tex; r.dataset.lantern = theme.lantern;
+ ROOT_KEYS.forEach(k => { r.dataset[k] = k === "skin" ? resolveSkin(theme.skin) : theme[k]; });
+ document.querySelectorAll(".card-icon").forEach(el => { el.dataset.ist = theme.ics; });
+ if(metaTheme) metaTheme.content = SKIN_META[r.dataset.skin] || META0;
  if(lanternLayer) lanternLayer.style.setProperty("--wig", LANTERN_WIG[theme.wig]);
  sizeLanternLayer(); buildLanterns(); syncThemeUI();
 }
-document.querySelectorAll("#vTheme .seg").forEach(seg => seg.addEventListener("click", e => {
+document.querySelectorAll("#vTheme [data-key]").forEach(box => box.addEventListener("click", e => {
  const b = e.target.closest("button[data-v]"); if(!b) return;
- theme[seg.dataset.key] = b.dataset.v; saveTheme(); applyTheme();
+ theme[box.dataset.key] = b.dataset.v; saveTheme(); applyTheme();
 }));
 $("themeReset").addEventListener("click", () => { theme = {...THEME_DEFAULT}; saveTheme(); applyTheme(); showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
 $("themeDone").addEventListener("click", requestClose);
 
 /* ===== เริ่มทำงาน ===== */
-buildPickers(); buildThemePreview(); applyTheme();
+buildPickers(); buildPickers2(); buildThemePreview(); applyTheme();
 const cached = API ? readCache() : null;
 if(cached){            // มีของเดิม: แสดงทันที แล้วอัปเดตจากออนไลน์เงียบๆ ข้างหลัง
  systems = cached.systems; sysVersion = cached.version; source = "cache"; renderCards();
