@@ -576,3 +576,15 @@ body{
 @media(prefers-reduced-motion:reduce){
   .lantern,.lantern-sway,.lantern-glow,.lantern-flame{animation:none!important}
 }
+
+/* หน้าตา: ขอบเขต ส่วนกลาง / ของฉัน */
+.th-scope{margin:0 0 14px}
+.th-mode{flex-wrap:nowrap}
+.th-mode button{flex:1;flex-direction:column;gap:1px;border-radius:16px;padding:10px 8px;text-align:center}
+.th-mode button b{font-size:13px}
+.th-mode button small{font-weight:600;font-size:11px;opacity:.78}
+.th-mode button:disabled{cursor:not-allowed}
+.th-note{margin:10px 2px 0;font-size:12.5px;line-height:1.7;font-weight:600;color:#486581}
+.th-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.th-actions .st-btn{padding:9px 14px;font-size:12.5px}
+.th-actions [hidden],.st-savebar [hidden]{display:none}

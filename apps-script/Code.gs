@@ -4,6 +4,7 @@
  *   - ชีต "Systems"  = ปุ่มระบบงานของโรงเรียน
  *   - ชีต "EsCats"   = หมวดของ "บริการ สพป." (สร้างให้อัตโนมัติตอนบันทึกครั้งแรก)
  *   - ชีต "EsLinks"  = ลิงก์ของ "บริการ สพป."
+ *   - หน้าตาส่วนกลาง (ทุกคนเห็น) เก็บใน Script Properties คีย์ THEME (ไม่ต้องมีชีต)
  *
  * วิธีติดตั้ง/อัปเดต อยู่ในไฟล์ apps-script/SETUP.md และ apps-script/UPDATE-ESERVICE.md
  */
@@ -25,6 +26,18 @@ const ES_LINKS_SHEET = 'EsLinks';
 const ES_CAT_HEADERS = ['id', 'name', 'icon', 'color'];
 const ES_LINK_HEADERS = ['id', 'cat', 'name', 'short', 'desc', 'url', 'icon', 'color', 'pin'];
 const MAX_ES_CATS = 20;
+
+// ----- หน้าตาส่วนกลาง (ต้องตรงกับ THEME_OPTS ใน app.js) -----
+const THEME_OPTS = {
+  cards: ['pastel', 'plain'], tint: ['soft', 'mid', 'vivid'],
+  tex: ['none', 'dots', 'grain', 'gingham', 'linen'],
+  lantern: ['on', 'off'], count: ['low', 'mid', 'high'], wig: ['soft', 'mid', 'strong'],
+  skin: ['classic', 'auto', 'midnight', 'aurora', 'candy', 'sakura', 'forest', 'sunset', 'graphite'],
+  layout: ['card', 'grid', 'list', 'tile'],
+  ics: ['classic', 'ios', 'glass', 'jelly', 'tonal', 'neu', 'neon', 'outline'],
+  shape: ['auto', 'squircle', 'circle', 'rounded', 'square', 'leaf'],
+  isize: ['s', 'm', 'l'], iw: ['thin', 'reg', 'bold'], accent: ['own', 'theme'], motion: ['on', 'calm']
+};
 const MAX_ES_LINKS = 150;
 
 function doGet(e) {
@@ -33,7 +46,8 @@ function doGet(e) {
     return json_({
       ok: true,
       systems: readAll_(), version: getVersion_(),
-      eservice: readEs_(), esVersion: getEsVersion_()
+      eservice: readEs_(), esVersion: getEsVersion_(),
+      theme: readTheme_(), themeVersion: getThemeVersion_()
     });
   }
   return json_({ ok: false, error: 'unknown_action' });
@@ -82,6 +96,26 @@ function doPost(e) {
       const version = String(Date.now());
       PropertiesService.getScriptProperties().setProperty('ES_VERSION', version);
       return json_({ ok: true, eservice: clean, version: version });
+    } finally {
+      lock.releaseLock();
+    }
+  }
+
+  if (body.action === 'themeSave') {
+    const lock = LockService.getScriptLock();
+    if (!lock.tryLock(15000)) return json_({ ok: false, error: 'busy' });
+    try {
+      const current = getThemeVersion_();
+      if (current && body.baseVersion && String(body.baseVersion) !== current) {
+        return json_({ ok: false, error: 'version_conflict' });
+      }
+      const clean = validateTheme_(body.theme);
+      if (typeof clean === 'string') return json_({ ok: false, error: clean });
+      const p = PropertiesService.getScriptProperties();
+      const version = String(Date.now());
+      p.setProperty('THEME', JSON.stringify(clean));
+      p.setProperty('THEME_VERSION', version);
+      return json_({ ok: true, theme: clean, version: version });
     } finally {
       lock.releaseLock();
     }
@@ -206,6 +240,27 @@ function writeEs_(es) {
 
 function getEsVersion_() {
   return PropertiesService.getScriptProperties().getProperty('ES_VERSION') || '';
+}
+
+// ---------- หน้าตาส่วนกลาง ----------
+function readTheme_() {
+  const s = PropertiesService.getScriptProperties().getProperty('THEME');
+  if (!s) return null;                        // ยังไม่เคยตั้ง → หน้าเว็บใช้ค่าเริ่มต้น
+  try { return JSON.parse(s); } catch (err) { return null; }
+}
+
+function getThemeVersion_() {
+  return PropertiesService.getScriptProperties().getProperty('THEME_VERSION') || '';
+}
+
+function validateTheme_(o) {
+  if (!o || typeof o !== 'object') return 'invalid_theme';
+  const out = {};
+  for (const k in THEME_OPTS) {
+    if (THEME_OPTS[k].indexOf(o[k]) < 0) return 'invalid_theme';
+    out[k] = o[k];
+  }
+  return out;
 }
 
 // ---------- ตรวจข้อมูลก่อนบันทึก ----------

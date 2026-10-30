@@ -98,6 +98,8 @@ async function loadSystems(silent){
   const list = normalize(j.systems);
   sysVersion = j.version || null;
   if("eservice" in j){ esOnline = true; esApplyOnline(j.eservice, j.esVersion); }
+  if("theme" in j) themeApplyOnline(j.theme, j.themeVersion);
+  else if(themeSupported !== false){ themeSupported = false; if(!themeDraft) syncTheme(); }
   if(list.length){ systems = list; source = "online"; writeCache(list, sysVersion); }
   else { systems = clone(DEFAULT_SYSTEMS); source = "empty"; }
  }catch(e){
@@ -193,13 +195,13 @@ const ERR = {
  network:"เชื่อมต่อออนไลน์ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่", busy:"ระบบกำลังบันทึกให้ผู้อื่น ลองใหม่อีกครั้ง", version_conflict:"ข้อมูลถูกแก้ไขโดยผู้อื่นไปก่อนแล้ว",
  invalid_url:"ลิงก์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย http:// หรือ https://)", invalid_name:"ชื่อปุ่มไม่ถูกต้อง", too_many_items:"จำนวนปุ่มเกินกำหนด (สูงสุด 60)",
  unknown_action:"หลังบ้าน (Code.gs) ยังเป็นเวอร์ชันเก่า — วางโค้ดใหม่แล้ว Deploy เวอร์ชันใหม่ (ดู apps-script/UPDATE-ESERVICE.md)", bad_request:"ข้อมูลไม่ถูกต้อง",
- invalid_data:"ข้อมูลไม่ถูกต้อง", invalid_id:"รหัสรายการไม่ถูกต้อง", invalid_group:"หมวดหมู่ไม่ถูกต้อง", invalid_color:"สีไม่ถูกต้อง", invalid_icon:"ไอคอนไม่ถูกต้อง", invalid_cats:"ต้องมีอย่างน้อย 1 หมวด", too_many_cats:"จำนวนหมวดเกินกำหนด (สูงสุด 20)", too_many_links:"จำนวนลิงก์เกินกำหนด (สูงสุด 150)"
+ invalid_theme:"ค่าหน้าตาไม่ถูกต้อง", invalid_data:"ข้อมูลไม่ถูกต้อง", invalid_id:"รหัสรายการไม่ถูกต้อง", invalid_group:"หมวดหมู่ไม่ถูกต้อง", invalid_color:"สีไม่ถูกต้อง", invalid_icon:"ไอคอนไม่ถูกต้อง", invalid_cats:"ต้องมีอย่างน้อย 1 หมวด", too_many_cats:"จำนวนหมวดเกินกำหนด (สูงสุด 20)", too_many_links:"จำนวนลิงก์เกินกำหนด (สูงสุด 150)"
 };
 function showView(name){
  views.forEach(v => $(v).hidden = v !== name); dlg.scrollTop = 0;
  const sub = name === "vForm" || name === "vEsForm";
  $("stTabs").hidden = sub;
- if(!sub){ stTab = name === "vTheme" ? "theme" : name === "vEs" ? "es" : (name === "vLogin" && stTab === "es") ? "es" : "manage"; $("stTabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === stTab)); }
+ if(!sub){ stTab = name === "vTheme" ? "theme" : name === "vEs" ? "es" : (name === "vLogin" && (stTab === "es" || stTab === "theme")) ? stTab : "manage"; $("stTabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === stTab)); }
  $("stTitle").textContent = name === "vForm" ? (admin.editing ? "แก้ไขปุ่ม" : "เพิ่มปุ่มใหม่")
   : name === "vEsForm" ? (esf.mode === "cat" ? (esf.editing ? "แก้ไขหมวด" : "เพิ่มหมวด") : (esf.editing ? "แก้ไขลิงก์" : "เพิ่มลิงก์")) : "ตั้งค่า";
 }
@@ -221,11 +223,13 @@ function openSettings(tab){
 }
 $("stTabs").addEventListener("click", e => {
  const b = e.target.closest("button[data-tab]"); if(!b) return;
+ stTab = b.dataset.tab;
  if(b.dataset.tab === "theme") showView("vTheme"); else if(b.dataset.tab === "es") showEs(); else showManage();
 });
 function requestClose(){
- if((admin.dirty || esDirty) && !confirm("มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึกขึ้นออนไลน์ ต้องการปิดและทิ้งการแก้ไขหรือไม่?")) return;
+ if((admin.dirty || esDirty || themeDirty) && !confirm("มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึกขึ้นออนไลน์ ต้องการปิดและทิ้งการแก้ไขหรือไม่?")) return;
  if(esDirty){ es = esLoad(); esDirty = false; renderEsBanner(); }
+ if(themeDraft) endThemeAdmin();
  admin.pass = ""; admin.dirty = false; admin.draft = []; dlg.close();
 }
 function setBusy(btn, busy, label){ btn.disabled = busy; if(label !== undefined) btn.textContent = busy ? label : btn.dataset.label; }
@@ -240,7 +244,7 @@ $("loginForm").addEventListener("submit", async e => {
  await loadSystems(false);                       // โหลดข้อมูลล่าสุดก่อนแก้ไขเสมอ
  if(source === "offline"){ admin.pass = ""; renderCards(); err.textContent = ERR.network; err.hidden = false; setBusy(btn,false,""); return; }
  renderCards(); admin.draft = clone(systems); admin.dirty = false; setBusy(btn,false,""); renderEsBanner();
- if(stTab === "es"){ renderEsManager(); showView("vEs"); } else{ renderManager(); showView("vList"); }
+ if(stTab === "es"){ renderEsManager(); showView("vEs"); } else if(stTab === "theme"){ startThemeAdmin(); } else{ renderManager(); showView("vList"); }
 });
 $("stClose").addEventListener("click", requestClose);
 $("setupClose").addEventListener("click", requestClose);
@@ -383,13 +387,43 @@ const THEME_DEFAULT = {cards:"pastel",tint:"mid",tex:"dots",lantern:"on",count:"
 const ROOT_KEYS = ["cards","tint","tex","lantern","skin","layout","ics","shape","isize","iw","accent","motion"];   // ค่าที่ส่งให้ CSS ผ่าน data-* บน <html>
 const VISUAL_DEFAULT = (({lantern,count,wig,...v}) => v)(THEME_DEFAULT);                                         // ชุดสำเร็จรูปไม่แตะโคมลอย
 const LANTERN_N = {low:5,mid:8,high:12}, LANTERN_WIG = {soft:.6,mid:1,strong:1.7};
-function readTheme(){
- let o = {}; try{ o = JSON.parse(localStorage.getItem(THEME_KEY)) || {}; }catch{}
- const t = {}; for(const k in THEME_DEFAULT) t[k] = THEME_OPTS[k].includes(o[k]) ? o[k] : THEME_DEFAULT[k];
- return t;
+/* --- หน้าตา 2 ระดับ ---
+   ส่วนกลาง (online) = ผู้ดูแลตั้งครั้งเดียว ทุกคนเห็นเหมือนกัน — เก็บในหลังบ้าน
+   ของฉัน (local)    = เลือกเองเฉพาะเครื่องนี้ — เก็บใน localStorage
+   ผู้เข้าใช้ครั้งแรก (ยังไม่เคยกดสลับโหมด) จะได้แบบส่วนกลางเสมอ */
+const THEME_MODE_KEY = "banrai-hub-theme-mode-v1";      // "online" | "local" (ไม่มีค่า = ยังไม่เคยเลือก = online)
+const THEME_ONLINE_KEY = "banrai-hub-theme-online-v1";  // สำเนาหน้าตาส่วนกลางล่าสุด ไว้แสดงผลเร็ว/ออฟไลน์
+function cleanTheme(o){ o = o && typeof o === "object" ? o : {}; const t = {}; for(const k in THEME_DEFAULT) t[k] = THEME_OPTS[k].includes(o[k]) ? o[k] : THEME_DEFAULT[k]; return t; }
+function readLS(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } }
+let themeLocal = cleanTheme(readLS(THEME_KEY));
+let themeMode = (() => { try{ return localStorage.getItem(THEME_MODE_KEY) === "local" ? "local" : "online"; }catch{ return "online"; } })();
+const _tc = readLS(THEME_ONLINE_KEY);
+let themeOnline = _tc && _tc.theme ? cleanTheme(_tc.theme) : null, themeVersion = _tc ? (_tc.version || null) : null;
+let themeSupported = API ? null : false;     // null = ยังไม่รู้ • false = หลังบ้านไม่รองรับ/ไม่ได้เชื่อม → ใช้แบบของฉันอย่างเดียว
+let themeDraft = null, themeDirty = false;   // themeDraft != null = ผู้ดูแลกำลังแก้หน้าตาส่วนกลาง
+const effMode = () => themeDraft ? "online" : (themeMode === "online" && themeSupported !== false ? "online" : "local");
+function resolveTheme(){ return themeDraft || (effMode() === "online" ? (themeOnline || {...THEME_DEFAULT}) : themeLocal); }
+let theme = resolveTheme();
+function saveThemeLocal(){ try{ localStorage.setItem(THEME_KEY, JSON.stringify(themeLocal)); }catch{} }
+function syncTheme(){ theme = resolveTheme(); applyTheme(); }
+function canEditTheme(){ return !!themeDraft || effMode() === "local"; }
+function setTheme(patch){                      // แก้ได้เฉพาะ: โหมดของฉัน หรือผู้ดูแลกำลังแก้ส่วนกลาง
+ if(themeDraft){ themeDraft = {...themeDraft, ...patch}; themeDirty = true; }
+ else if(effMode() === "local"){ themeLocal = {...themeLocal, ...patch}; saveThemeLocal(); }
+ else return false;
+ syncTheme(); return true;
 }
-let theme = readTheme();
-function saveTheme(){ try{ localStorage.setItem(THEME_KEY, JSON.stringify(theme)); }catch{} }
+function setThemeMode(m){
+ themeMode = m; try{ localStorage.setItem(THEME_MODE_KEY, m); }catch{}
+ syncTheme(); showToast(m === "online" ? "ใช้หน้าตาส่วนกลาง" : "ใช้หน้าตาของฉัน");
+}
+function themeApplyOnline(data, ver){          // รับค่าจากหลังบ้านตอนโหลด/บันทึก
+ themeSupported = true; themeVersion = ver || null;
+ themeOnline = data ? cleanTheme(data) : null;
+ try{ localStorage.setItem(THEME_ONLINE_KEY, JSON.stringify({theme:themeOnline, version:themeVersion})); }catch{}
+ if(themeDraft) return;                        // กำลังแก้อยู่ ไม่ทับ
+ if(JSON.stringify(resolveTheme()) !== JSON.stringify(theme)) syncTheme(); else syncThemeUI();
+}
 
 /* ตัวอย่างการ์ดในหน้าตั้งค่า */
 const THEME_SAMPLES = [
@@ -484,7 +518,7 @@ function buildPickers2(){
 $("presetRow").addEventListener("click", e => {
  const b = e.target.closest("button[data-preset]"); if(!b) return;
  const p = PRESETS.find(x => x.id === b.dataset.preset); if(!p) return;
- theme = {...theme, ...VISUAL_DEFAULT, ...p.set}; saveTheme(); applyTheme(); showToast("ใช้ชุด “" + p.n + "” แล้ว");
+ if(setTheme({...VISUAL_DEFAULT, ...p.set})) showToast("ใช้ชุด “" + p.n + "” แล้ว");
 });
 
 const nameOf = (list, v) => (list.find(x => x[0] === v) || [v, v])[1];
@@ -498,7 +532,7 @@ function syncSummaries(){
 document.querySelectorAll("#vTheme details.st-sec").forEach(d => d.addEventListener("toggle", () => {   // เปิดทีละหมวด
  if(d.open) document.querySelectorAll("#vTheme details.st-sec").forEach(o => { if(o !== d) o.open = false; });
 }));
-function syncThemeUI(){ syncSummaries();
+function syncThemeUI(){ syncSummaries(); syncScopeUI();
  document.querySelectorAll("#vTheme [data-key]").forEach(box => box.querySelectorAll("button[data-v]").forEach(b => {
   const on = theme[box.dataset.key] === b.dataset.v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
  }));
@@ -515,9 +549,55 @@ function applyTheme(){
 }
 document.querySelectorAll("#vTheme [data-key]").forEach(box => box.addEventListener("click", e => {
  const b = e.target.closest("button[data-v]"); if(!b) return;
- theme[box.dataset.key] = b.dataset.v; saveTheme(); applyTheme();
+ setTheme({[box.dataset.key]: b.dataset.v});
 }));
-$("themeReset").addEventListener("click", () => { theme = {...THEME_DEFAULT}; saveTheme(); applyTheme(); showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
+$("themeReset").addEventListener("click", () => { if(setTheme({...THEME_DEFAULT})) showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
+
+/* ===== ตัวเลือกขอบเขต: ส่วนกลาง / ของฉัน + โหมดผู้ดูแล ===== */
+function syncScopeUI(){
+ const editing = !!themeDraft, m = effMode(), canLocalOnly = themeSupported === false;
+ $("thMode").hidden = canLocalOnly;
+ $("thMode").querySelectorAll("button[data-mode]").forEach(b => { const on = b.dataset.mode === m; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.disabled = editing; });
+ $("thNote").textContent = editing ? "กำลังแก้หน้าตาส่วนกลาง — เห็นตัวอย่างทันที แต่ต้องกด “บันทึกเป็นหน้าตาส่วนกลาง” ทุกคนจึงจะเห็นแบบนี้"
+  : canLocalOnly ? "หน้าตาบันทึกเฉพาะเครื่อง/เบราว์เซอร์นี้ (ยังไม่ได้เชื่อมหลังบ้านรุ่นที่รองรับหน้าตาส่วนกลาง)"
+  : m === "online" ? (themeOnline ? "ใช้หน้าตาส่วนกลางที่ผู้ดูแลตั้งไว้ — ทุกคนเห็นเหมือนกัน (อยากปรับเองให้สลับไป “ของฉัน”)" : "ผู้ดูแลยังไม่ได้ตั้งหน้าตาส่วนกลาง จึงใช้แบบเริ่มต้นของระบบ")
+  : "ใช้หน้าตาของฉัน — บันทึกเฉพาะเครื่อง/เบราว์เซอร์นี้ ไม่กระทบคนอื่น";
+ $("thBody").classList.toggle("is-off", !canEditTheme());
+ $("thAdminBtn").hidden = editing || canLocalOnly || m !== "online";
+ $("thCopyBtn").hidden = editing || m !== "local" || canLocalOnly; $("thCopyBtn").disabled = !themeOnline;
+ $("themeReset").hidden = !canEditTheme();
+ $("themeDone").hidden = editing; $("themeSaveOnline").hidden = !editing; $("themeCancelAdmin").hidden = !editing;
+ $("themeSaveOnline").disabled = !themeDirty;
+}
+$("thMode").addEventListener("click", e => { const b = e.target.closest("button[data-mode]"); if(b && !themeDraft) setThemeMode(b.dataset.mode); });
+$("thCopyBtn").addEventListener("click", () => {
+ if(!themeOnline) return;
+ if(!confirm("คัดลอกหน้าตาส่วนกลางมาเป็นของฉัน? (ค่าหน้าตาของฉันเดิมจะถูกแทนที่)")) return;
+ themeLocal = {...themeOnline}; saveThemeLocal(); syncTheme(); showToast("คัดลอกมาเป็นหน้าตาของฉันแล้ว");
+});
+function startThemeAdmin(){ themeDraft = {...(themeOnline || THEME_DEFAULT)}; themeDirty = false; syncTheme(); showView("vTheme"); }
+function endThemeAdmin(){ themeDraft = null; themeDirty = false; syncTheme(); }
+$("thAdminBtn").addEventListener("click", () => {
+ if(!themeSupported){ showToast(ERR.unknown_action); return; }
+ if(admin.pass){ startThemeAdmin(); return; }
+ stTab = "theme"; $("loginError").hidden = true; $("adminPass").value = ""; showView("vLogin"); setTimeout(() => $("adminPass").focus(), 60);
+});
+$("themeCancelAdmin").addEventListener("click", () => {
+ if(themeDirty && !confirm("ทิ้งการแก้ไขหน้าตาส่วนกลางที่ยังไม่บันทึก?")) return;
+ endThemeAdmin();
+});
+$("themeSaveOnline").addEventListener("click", async () => {
+ const btn = $("themeSaveOnline"); btn.disabled = true; btn.textContent = "กำลังบันทึก...";
+ const r = await apiPost({action:"themeSave", password:admin.pass, theme:themeDraft, baseVersion:themeVersion});
+ btn.textContent = "บันทึกเป็นหน้าตาส่วนกลาง";
+ if(r.ok){ themeDraft = null; themeDirty = false; themeApplyOnline(r.theme, r.version); syncTheme(); showToast("บันทึกหน้าตาส่วนกลางแล้ว ✓ ทุกเครื่องจะเห็นแบบนี้"); return; }
+ if(r.error === "version_conflict"){
+  if(confirm("หน้าตาส่วนกลางถูกแก้ไขโดยผู้อื่นไปก่อนแล้ว\nต้องการโหลดฉบับล่าสุดมาแทนที่การแก้ไขของคุณหรือไม่?")){ themeDraft = null; themeDirty = false; await loadSystems(false); syncTheme(); }
+  syncScopeUI(); return;
+ }
+ if(r.error === "wrong_password" || r.error === "locked"){ admin.pass = ""; endThemeAdmin(); }
+ alert("บันทึกไม่สำเร็จ: " + (ERR[r.error] || r.error || "ไม่ทราบสาเหตุ")); syncScopeUI();
+});
 $("themeDone").addEventListener("click", requestClose);
 
 /* ===== บริการ สพป. (E-Service): การ์ดหน้าแรก • แผงเลื่อนขึ้น • แก้ไขในตั้งค่า (จำในเครื่องนี้) ===== */
@@ -764,7 +844,7 @@ $("esReset").addEventListener("click", () => {
 });
 
 /* ===== เริ่มทำงาน ===== */
-buildPickers(); buildPickers2(); buildEsPickers(); buildThemePreview(); applyTheme(); renderEsBanner();
+buildPickers(); buildPickers2(); buildEsPickers(); buildThemePreview(); syncTheme(); renderEsBanner();
 const cached = API ? readCache() : null;
 if(cached){            // มีของเดิม: แสดงทันที แล้วอัปเดตจากออนไลน์เงียบๆ ข้างหลัง
  systems = cached.systems; sysVersion = cached.version; source = "cache"; renderCards();

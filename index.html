@@ -177,7 +177,13 @@
     <div class="st-tabs" id="stTabs" role="tablist"><button type="button" role="tab" data-tab="theme"><i>🎨</i>หน้าตา</button><button type="button" role="tab" data-tab="manage"><i>🧩</i>ปุ่มระบบ</button><button type="button" role="tab" data-tab="es"><i>🏛</i>บริการ สพป.</button></div>
 
     <section id="vTheme" hidden>
+      <div class="th-scope">
+        <div class="seg th-mode" id="thMode" role="group" aria-label="ขอบเขตหน้าตา"><button type="button" data-mode="online"><b>🌐 ส่วนกลาง</b><small>ทุกคนเห็นเหมือนกัน</small></button><button type="button" data-mode="local"><b>📱 ของฉัน</b><small>เฉพาะเครื่องนี้</small></button></div>
+        <p class="th-note" id="thNote"></p>
+        <div class="th-actions"><button type="button" class="st-btn ghost" id="thAdminBtn" hidden>🔑 ผู้ดูแล: แก้หน้าตาส่วนกลาง</button><button type="button" class="st-btn ghost" id="thCopyBtn" hidden>คัดลอกจากส่วนกลางมาเป็นของฉัน</button></div>
+      </div>
       <div class="form-preview theme-prev-box"><span class="form-hint">ตัวอย่างสด — เปลี่ยนแล้วเห็นทันที</span><div class="theme-preview" id="themePreview" aria-hidden="true"></div></div>
+      <div id="thBody">
       <details class="st-sec" open>
         <summary><span class="sec-ic" style="--c:#F59E0B">⚡</span><span class="sec-tt"><b>ชุดสำเร็จรูป</b><small data-sum="preset">แตะครั้งเดียวเปลี่ยนทั้งหน้าตา</small></span><i class="sec-chev" aria-hidden="true"></i></summary>
         <div class="sec-body">
@@ -232,11 +238,12 @@
         <summary><span class="sec-ic" style="--c:#64748B">🎬</span><span class="sec-tt"><b>การเคลื่อนไหว</b><small data-sum="motion"></small></span><i class="sec-chev" aria-hidden="true"></i></summary>
         <div class="sec-body">
           <div class="seg" data-key="motion"><button type="button" data-v="on">ปกติ</button><button type="button" data-v="calm">ลดเอฟเฟกต์ (เครื่องช้า/ประหยัดแบต)</button></div>
-          <p class="st-hint">การตั้งค่าหน้าตาทั้งหมดจำไว้เฉพาะเครื่อง/เบราว์เซอร์นี้ เลือก “คลาสสิก (เดิม)” หรือกด “คืนค่าเริ่มต้น” เพื่อกลับแบบเดิมได้ตลอด</p>
+          <p class="st-hint">โหมด “ของฉัน” จำไว้เฉพาะเครื่อง/เบราว์เซอร์นี้ • โหมด “ส่วนกลาง” ผู้ดูแลเป็นผู้ตั้ง • เลือก “คลาสสิก (เดิม)” หรือกด “คืนค่าเริ่มต้น” เพื่อกลับแบบเดิมได้ตลอด</p>
         </div>
       </details>
+      </div>
 
-      <div class="st-savebar"><button class="st-btn ghost" id="themeReset" type="button">คืนค่าเริ่มต้น</button><button class="st-btn primary" id="themeDone" type="button">เสร็จแล้ว</button></div>
+      <div class="st-savebar"><button class="st-btn ghost" id="themeReset" type="button">คืนค่าเริ่มต้น</button><button class="st-btn ghost" id="themeCancelAdmin" type="button" hidden>ยกเลิก</button><button class="st-btn primary" id="themeDone" type="button">เสร็จแล้ว</button><button class="st-btn primary" id="themeSaveOnline" type="button" hidden>บันทึกเป็นหน้าตาส่วนกลาง</button></div>
     </section>
 
     <section id="vEs" hidden>
