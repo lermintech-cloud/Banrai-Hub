@@ -395,6 +395,16 @@ const THEME_MODE_KEY = "banrai-hub-theme-mode-v1";      // "online" | "local" (�
 const THEME_ONLINE_KEY = "banrai-hub-theme-online-v1";  // สำเนาหน้าตาส่วนกลางล่าสุด ไว้แสดงผลเร็ว/ออฟไลน์
 /* แบนเนอร์ (รูปในส่วนหัว): url = ลิงก์ https / พาธในเว็บ (เช่น banners/hero.jpg) / data: (เฉพาะโหมดของฉัน)
    x,y = ตำแหน่งรูป 0–100 • zoom = 100–300 • h = ความสูงส่วนหัว px (0 = อัตโนมัติ) • ov = ฉากทับ -60 (ขาว) … 60 (ดำ) */
+const clampNum = (v, lo, hi, d, dec) => { v = Number(v); if(!Number.isFinite(v)) return d; v = Math.min(hi, Math.max(lo, v)); return dec ? Math.round(v * 10) / 10 : Math.round(v); };
+/* องค์ประกอบในส่วนหัว: on = แสดง • dx = เลื่อนซ้าย–ขวา (% ความกว้าง) • dy = เลื่อนบน–ล่าง (px) • sz = ขนาด % */
+const HERO_DEFAULT = {brand:{on:true,dx:0,dy:0,sz:100}, text:{on:true,dx:0,dy:0,sz:100}, mascot:{on:true,dx:0,dy:0,sz:100}};
+const HERO_LABEL = {brand:["🏫","โลโก้และชื่อโรงเรียน"], text:["🔤","ข้อความหัวเรื่อง"], mascot:["🧸","ตัวการ์ตูนมาสคอต"]};
+function cleanHero(o){
+ o = o && typeof o === "object" ? o : {}; const out = {};
+ for(const k in HERO_DEFAULT){ const g = o[k] && typeof o[k] === "object" ? o[k] : {};
+  out[k] = {on:!(g.on === false || g.on === 0), dx:clampNum(g.dx,-50,50,0,1), dy:clampNum(g.dy,-200,300,0), sz:clampNum(g.sz,50,160,100)}; }
+ return out;
+}
 const BANNER_DEFAULT = {url:"", x:50, y:50, zoom:100, h:0, ov:0};
 const BN_URL_OK = /^(?:https?:\/\/[^\s"'()\\]+|(?!\/)(?!.*\.\.)[A-Za-z0-9_\-.\/]+\.(?:png|jpe?g|webp|gif|svg|avif))$/i;
 const BN_DATA_OK = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/;
@@ -406,7 +416,7 @@ function cleanBanner(o, allowData = true){
  if(!ok) url = "";
  return {url, x:num(o.x,0,100,50,1), y:num(o.y,0,100,50,1), zoom:num(o.zoom,100,300,100), h:num(o.h,0,420,0), ov:num(o.ov,-60,60,0)};
 }
-function cleanTheme(o){ o = o && typeof o === "object" ? o : {}; const t = {}; for(const k in THEME_DEFAULT) t[k] = THEME_OPTS[k].includes(o[k]) ? o[k] : THEME_DEFAULT[k]; t.banner = cleanBanner(o.banner); return t; }
+function cleanTheme(o){ o = o && typeof o === "object" ? o : {}; const t = {}; for(const k in THEME_DEFAULT) t[k] = THEME_OPTS[k].includes(o[k]) ? o[k] : THEME_DEFAULT[k]; t.banner = cleanBanner(o.banner); t.hero = cleanHero(o.hero); return t; }
 function readLS(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } }
 let themeLocal = cleanTheme(readLS(THEME_KEY));
 let themeMode = (() => { try{ return localStorage.getItem(THEME_MODE_KEY) === "local" ? "local" : "online"; }catch{ return "online"; } })();
@@ -545,7 +555,7 @@ function syncSummaries(){
 document.querySelectorAll("#vTheme details.st-sec").forEach(d => d.addEventListener("toggle", () => {   // เปิดทีละหมวด
  if(d.open) document.querySelectorAll("#vTheme details.st-sec").forEach(o => { if(o !== d) o.open = false; });
 }));
-function syncThemeUI(){ syncSummaries(); syncScopeUI(); syncBannerUI();
+function syncThemeUI(){ syncSummaries(); syncScopeUI(); syncBannerUI(); syncHeroUI();
  document.querySelectorAll("#vTheme [data-key]").forEach(box => box.querySelectorAll("button[data-v]").forEach(b => {
   const on = theme[box.dataset.key] === b.dataset.v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
  }));
@@ -558,13 +568,13 @@ function applyTheme(){
  document.querySelectorAll(".card-icon").forEach(el => { el.dataset.ist = theme.ics; });
  if(metaTheme) metaTheme.content = SKIN_META[r.dataset.skin] || META0;
  if(lanternLayer) lanternLayer.style.setProperty("--wig", LANTERN_WIG[theme.wig]);
- applyBanner(); sizeLanternLayer(); buildLanterns(); syncThemeUI();
+ applyBanner(); applyHero(); sizeLanternLayer(); buildLanterns(); syncThemeUI();
 }
 document.querySelectorAll("#vTheme [data-key]").forEach(box => box.addEventListener("click", e => {
  const b = e.target.closest("button[data-v]"); if(!b) return;
  setTheme({[box.dataset.key]: b.dataset.v});
 }));
-$("themeReset").addEventListener("click", () => { if(setTheme({...THEME_DEFAULT, banner:{...BANNER_DEFAULT}})) showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
+$("themeReset").addEventListener("click", () => { if(setTheme({...THEME_DEFAULT, banner:{...BANNER_DEFAULT}, hero:cleanHero()})) showToast("คืนค่าหน้าตาเริ่มต้นแล้ว"); });
 
 /* ===== ตัวเลือกขอบเขต: ส่วนกลาง / ของฉัน + โหมดผู้ดูแล ===== */
 function syncScopeUI(){
@@ -658,11 +668,14 @@ function syncBannerUI(){
 }
 function setBanner(patch, commit){
  if(!canEditTheme()) return false;
- const nb = cleanBanner({...cleanBanner(theme.banner), ...patch}, !themeDraft);
- if(themeDraft){ themeDraft = {...themeDraft, banner:nb}; themeDirty = true; $("themeSaveOnline").disabled = false; }
- else{ themeLocal = {...themeLocal, banner:nb}; if(commit && !saveThemeLocal()) showToast("พื้นที่จัดเก็บในเครื่องเต็ม — รูปนี้อาจไม่ถูกจำ ลองใช้รูปที่เล็กลงหรือวางลิงก์แทน"); }
- theme = resolveTheme(); applyBanner(); if(commit) syncBannerUI();
+ setPart("banner", cleanBanner({...cleanBanner(theme.banner), ...patch}, !themeDraft), commit);
+ applyBanner(); if(commit) syncBannerUI();
  return true;
+}
+function setPart(key, val, commit){             // เก็บค่าส่วนย่อยของธีม (แบนเนอร์/ส่วนหัว) ลง draft ส่วนกลาง หรือ ของฉัน
+ if(themeDraft){ themeDraft = {...themeDraft, [key]:val}; themeDirty = true; $("themeSaveOnline").disabled = false; }
+ else{ themeLocal = {...themeLocal, [key]:val}; if(commit && !saveThemeLocal()) showToast("พื้นที่จัดเก็บในเครื่องเต็ม — ค่านี้อาจไม่ถูกจำ ลองใช้รูปที่เล็กลงหรือวางลิงก์แทน"); }
+ theme = resolveTheme();
 }
 $("bnUrl").addEventListener("change", e => {
  const v = e.target.value.trim();
@@ -717,6 +730,45 @@ bnBox.addEventListener("pointermove", e => {
 });
 const bnEnd = () => { if(!bnDrag) return; bnDrag = null; bnBox.classList.remove("drag"); setBanner({}, true); };
 bnBox.addEventListener("pointerup", bnEnd); bnBox.addEventListener("pointercancel", bnEnd);
+
+/* ===== องค์ประกอบในส่วนหัว: แสดง/ซ่อน + เลื่อนตำแหน่ง + ขนาด ===== */
+const HERO_VAR = {brand:"hb", text:"ht", mascot:"hm"};
+function applyHero(){
+ const h = cleanHero(theme.hero), r = document.documentElement;
+ for(const k in h){ const v = HERO_VAR[k], g = h[k];
+  r.dataset[v] = g.on ? "on" : "off";
+  r.style.setProperty(`--${v}-dx`, g.dx); r.style.setProperty(`--${v}-dy`, g.dy); r.style.setProperty(`--${v}-sz`, g.sz / 100); }
+}
+const HERO_SL = [["dx","ซ้าย–ขวา",-50,50,.5,v => (v > 0 ? "+" : "") + v + "%"], ["dy","บน–ล่าง",-200,300,5,v => (v > 0 ? "+" : "") + v + "px"], ["sz","ขนาด",50,160,5,v => v + "%"]];
+const hdBox = $("hdBox");
+hdBox.innerHTML = Object.keys(HERO_DEFAULT).map(k => `<div class="hd-g" data-g="${k}"><div class="hd-h"><b>${HERO_LABEL[k][0]} ${HERO_LABEL[k][1]}</b><div class="seg hd-seg"><button type="button" data-on="1">แสดง</button><button type="button" data-on="0">ซ่อน</button></div></div>`
+ + `<div class="hd-c">${HERO_SL.map(([f,t,lo,hi,st]) => `<label class="bn-sl"><span>${t}</span><input type="range" data-f="${f}" min="${lo}" max="${hi}" step="${st}"><em data-v="${f}"></em></label>`).join("")}<button type="button" class="st-btn ghost hd-rs">รีเซ็ตตำแหน่ง</button></div></div>`).join("");
+function syncHeroUI(){
+ const h = cleanHero(theme.hero);
+ hdBox.querySelectorAll(".hd-g").forEach(el => {
+  const g = h[el.dataset.g];
+  el.querySelectorAll(".hd-seg button").forEach(b => { const on = (b.dataset.on === "1") === g.on; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+  el.querySelector(".hd-c").classList.toggle("is-off", !g.on);
+  HERO_SL.forEach(([f,,,,,fmt]) => { const i = el.querySelector(`input[data-f="${f}"]`); if(String(i.value) !== String(g[f])) i.value = g[f]; el.querySelector(`[data-v="${f}"]`).textContent = fmt(g[f]); });
+ });
+ const sum = document.querySelector('[data-sum="hero"]'); if(sum){ const off = Object.values(h).filter(g => !g.on).length; sum.textContent = off ? `ซ่อน ${off} อย่าง` : "แสดงครบ"; }
+}
+function setHero(group, patch, commit){
+ if(!canEditTheme()) return false;
+ const h = cleanHero(theme.hero); h[group] = {...h[group], ...patch};
+ setPart("hero", cleanHero(h), commit); applyHero(); syncHeroUI(); return true;
+}
+hdBox.addEventListener("click", e => {
+ const g = e.target.closest(".hd-g"); if(!g) return;
+ const b = e.target.closest(".hd-seg button"); if(b){ setHero(g.dataset.g, {on:b.dataset.on === "1"}, true); return; }
+ if(e.target.closest(".hd-rs")) setHero(g.dataset.g, {dx:0, dy:0, sz:100}, true);
+});
+hdBox.addEventListener("input", e => { const i = e.target.closest("input[data-f]"); if(i) setHero(i.closest(".hd-g").dataset.g, {[i.dataset.f]: Number(i.value)}, false); });
+hdBox.addEventListener("change", e => { const i = e.target.closest("input[data-f]"); if(i) setHero(i.closest(".hd-g").dataset.g, {}, true); });
+/* แตะค้างที่แถบเลื่อน = ทำให้หน้าต่างตั้งค่าโปร่ง เพื่อเห็นส่วนหัวจริงที่อยู่ข้างหลังขณะปรับ */
+const peekOff = () => dlg.classList.remove("peek");
+$("vTheme").addEventListener("pointerdown", e => { if(e.target.closest('input[type="range"]')) dlg.classList.add("peek"); });
+["pointerup","pointercancel","touchend","touchcancel"].forEach(t => window.addEventListener(t, peekOff, true));
 $("themeDone").addEventListener("click", requestClose);
 
 /* ===== บริการ สพป. (E-Service): การ์ดหน้าแรก • แผงเลื่อนขึ้น • แก้ไขในตั้งค่า (จำในเครื่องนี้) ===== */
@@ -762,12 +814,18 @@ function esApplyOnline(data, ver){
   try{ localStorage.setItem(ES_CACHE_KEY, JSON.stringify(v)); }catch{}
  }else{ esSource = "empty"; esVersion = ver || null; }   // ยังไม่เคยบันทึกออนไลน์ → ใช้ค่าที่มี (ค่าเริ่มต้น/ที่แก้ในเครื่อง)
 }
+/* ทางลัดที่ปักหมุด: ของแต่ละคน จำในเครื่องนี้ (ไม่หายตอนรีเฟรช/ตอนข้อมูลออนไลน์อัปเดต)
+   ยังไม่เคยปักเอง (myPins = null) = ใช้หมุดตั้งต้นที่ผู้ดูแลตั้งไว้ (pin ในข้อมูลส่วนกลาง) */
+const ES_PINS_KEY = "banrai-hub-es-pins-v1";
+let myPins = (() => { const v = readLS(ES_PINS_KEY); return Array.isArray(v) ? v.map(String) : null; })();
+const effPin = l => myPins ? myPins.includes(l.id) : !!l.pin;
+function saveMyPins(){ try{ if(myPins === null) localStorage.removeItem(ES_PINS_KEY); else localStorage.setItem(ES_PINS_KEY, JSON.stringify(myPins)); }catch{} }
 const esLabel = l => l.short || l.name;
 const esIco = l => `<span class="card-icon" data-ist="${theme.ics}" style="--accent:${esc(l.color)}">${svgIcon(l.icon)}</span>`;
 
 /* การ์ด + ทางลัดบนหน้าแรก */
 function renderEsBanner(){
- const card = $("esCard"), pins = es.links.filter(l => l.pin);
+ const card = $("esCard"), pins = es.links.filter(effPin);
  card.hidden = !es.show || !es.links.length; if(card.hidden) return;
  $("esTitle").textContent = es.title; $("esSub").textContent = `E-Service · ${es.links.length} ระบบ · ${es.cats.length} หมวด`;
  $("esRow").innerHTML = pins.map(l => `<a class="es-tile" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener noreferrer" title="${esc(l.name)}">${esIco(l)}<span class="es-lab">${esc(esLabel(l))}</span></a>`).join("")
@@ -776,21 +834,21 @@ function renderEsBanner(){
 
 /* แผงเลื่อนขึ้น */
 const esDlg = $("esDialog"); let esFilter = "all", esQuery = "";
-function esRowHtml(l){
+function esRowHtml(l, pinned = effPin(l)){
  const http = /^http:/i.test(l.url) ? ' <em title="ลิงก์นี้ไม่เข้ารหัส (http) เบราว์เซอร์อาจขึ้นคำเตือน">http</em>' : "";
  return `<div class="es-item"><a class="es-link" href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener noreferrer">${esIco(l)}<span class="es-txt"><b>${esc(l.name)}</b><small>${esc(l.desc || hostOf(l.url))}${http}</small></span><span class="es-go" aria-hidden="true">↗</span></a>`
-  + `<button type="button" class="es-pin${l.pin ? " on" : ""}" data-pin="${esc(l.id)}" aria-pressed="${l.pin}" aria-label="${l.pin ? "เอาออกจากทางลัด" : "ปักหมุดเป็นทางลัด"}" title="${l.pin ? "เอาออกจากทางลัด" : "ปักหมุดเป็นทางลัด"}">📌</button></div>`;
+  + `<button type="button" class="es-pin${pinned ? " on" : ""}" data-pin="${esc(l.id)}" aria-pressed="${pinned}" aria-label="${pinned ? "เอาออกจากทางลัด" : "ปักหมุดเป็นทางลัด"}" title="${pinned ? "เอาออกจากทางลัด" : "ปักหมุดเป็นทางลัด"}">📌</button></div>`;
 }
 function renderEsSheet(){
- $("esDlgTitle").textContent = es.title; $("esDlgSub").textContent = `${es.links.length} ระบบ · ${es.cats.length} หมวด`;
- const pins = es.links.filter(l => l.pin).length, chip = (v, t, n) => `<button type="button" class="es-chip${esFilter === v ? " on" : ""}" data-f="${esc(v)}">${t}<i>${n}</i></button>`;
+ $("esPinBar").hidden = myPins === null; $("esDlgTitle").textContent = es.title; $("esDlgSub").textContent = `${es.links.length} ระบบ · ${es.cats.length} หมวด`;
+ const pins = es.links.filter(effPin).length, chip = (v, t, n) => `<button type="button" class="es-chip${esFilter === v ? " on" : ""}" data-f="${esc(v)}">${t}<i>${n}</i></button>`;
  $("esChips").innerHTML = chip("all","ทั้งหมด",es.links.length) + chip("pin","📌 ปักหมุด",pins) + es.cats.map(c => chip(c.id, esc(c.name), es.links.filter(l => l.cat === c.id).length)).join("");
  const q = esQuery.trim().toLocaleLowerCase("th"); let html = "", shown = 0;
  es.cats.forEach(c => {
   if(esFilter !== "all" && esFilter !== "pin" && esFilter !== c.id) return;
-  const items = es.links.filter(l => l.cat === c.id && (esFilter !== "pin" || l.pin) && (!q || (l.name + " " + l.short + " " + l.desc + " " + hostOf(l.url) + " " + c.name).toLocaleLowerCase("th").includes(q)));
+  const items = es.links.filter(l => l.cat === c.id && (esFilter !== "pin" || effPin(l)) && (!q || (l.name + " " + l.short + " " + l.desc + " " + hostOf(l.url) + " " + c.name).toLocaleLowerCase("th").includes(q)));
   if(!items.length) return; shown += items.length;
-  html += `<section class="es-group"><h3 class="es-gh"><span class="es-gb" style="--c:${esc(c.color)}">${svgIcon(c.icon)}</span>${esc(c.name)}<small>${items.length}</small></h3><div class="es-list">${items.map(esRowHtml).join("")}</div></section>`;
+  html += `<section class="es-group"><h3 class="es-gh"><span class="es-gb" style="--c:${esc(c.color)}">${svgIcon(c.icon)}</span>${esc(c.name)}<small>${items.length}</small></h3><div class="es-list">${items.map(l => esRowHtml(l)).join("")}</div></section>`;
  });
  $("esBody").innerHTML = shown ? html : `<p class="es-none">${esFilter === "pin" && !q ? "ยังไม่มีทางลัด — แตะ 📌 ที่รายการเพื่อปักหมุด" : "ไม่พบบริการที่ค้นหา"}</p>`;
 }
@@ -803,12 +861,15 @@ $("esRow").addEventListener("click", e => { if(e.target.closest('[data-es="open"
 $("esClose").addEventListener("click", () => esDlg.close());
 esDlg.addEventListener("click", e => { if(e.target === esDlg) esDlg.close(); });
 $("esManage").addEventListener("click", () => { esDlg.close(); openSettings("es"); });
+$("esPinReset").addEventListener("click", () => { myPins = null; saveMyPins(); renderEsSheet(); renderEsBanner(); showToast("ใช้ทางลัดตามส่วนกลางแล้ว"); });
 $("esSearch").addEventListener("input", e => { esQuery = e.target.value; renderEsSheet(); });
 $("esChips").addEventListener("click", e => { const b = e.target.closest("button[data-f]"); if(b){ esFilter = b.dataset.f; renderEsSheet(); } });
 $("esBody").addEventListener("click", e => {
  const b = e.target.closest("button[data-pin]"); if(!b) return;
  const l = es.links.find(x => x.id === b.dataset.pin); if(!l) return;
- l.pin = !l.pin; esSave(); renderEsSheet(); renderEsBanner(); showToast(l.pin ? "ปักหมุดเป็นทางลัดแล้ว" : "เอาออกจากทางลัดแล้ว");
+ const set = new Set(myPins || es.links.filter(x => x.pin).map(x => x.id)), now = !set.has(l.id);
+ if(now) set.add(l.id); else set.delete(l.id);
+ myPins = [...set]; saveMyPins(); renderEsSheet(); renderEsBanner(); showToast(now ? "ปักหมุดเป็นทางลัดแล้ว (จำไว้ในเครื่องนี้)" : "เอาออกจากทางลัดแล้ว");
 });
 
 /* ตั้งค่า: จัดการลิงก์/หมวด */
@@ -897,7 +958,7 @@ function syncEsForm(){
  $("esfColorCustom").value = esf.color;
  const d = esFormData();
  if(esf.mode === "cat") $("esPv").innerHTML = `<div class="es-item"><div class="es-link"><span class="es-gb" style="--c:${esc(d.color)}">${svgIcon(d.icon)}</span><span class="es-txt"><b>${esc(d.name || "ชื่อหมวด")}</b><small>ตัวอย่างหัวข้อหมวด</small></span></div></div>`;
- else $("esPv").innerHTML = esRowHtml({id:"x", name:d.name || "ชื่อบริการ", short:d.short, desc:d.desc, url:d.url || "https://example.go.th", icon:d.icon, color:d.color, pin:d.pin});
+ else $("esPv").innerHTML = esRowHtml({id:"x", name:d.name || "ชื่อบริการ", short:d.short, desc:d.desc, url:d.url || "https://example.go.th", icon:d.icon, color:d.color}, d.pin);
 }
 function openEsForm(mode, id){
  esf.mode = mode; esf.editing = id;

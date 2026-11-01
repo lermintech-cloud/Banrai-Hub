@@ -263,6 +263,27 @@ function validateTheme_(o) {
   const bn = validateBanner_(o.banner);
   if (typeof bn === 'string') return bn;
   out.banner = bn;
+  out.hero = validateHero_(o.hero);
+  return out;
+}
+
+// องค์ประกอบในส่วนหัว (โลโก้/ข้อความ/มาสคอต): แสดง-ซ่อน + เลื่อน + ขนาด
+function clampNum_(v, lo, hi, d, dec) {
+  v = Number(v);
+  if (!isFinite(v)) return d;
+  v = Math.min(hi, Math.max(lo, v));
+  return dec ? Math.round(v * 10) / 10 : Math.round(v);
+}
+function validateHero_(h) {
+  h = (h && typeof h === 'object') ? h : {};
+  const out = {};
+  ['brand', 'text', 'mascot'].forEach(function (k) {
+    const g = (h[k] && typeof h[k] === 'object') ? h[k] : {};
+    out[k] = {
+      on: !(g.on === false || g.on === 0),
+      dx: clampNum_(g.dx, -50, 50, 0, true), dy: clampNum_(g.dy, -200, 300, 0), sz: clampNum_(g.sz, 50, 160, 100)
+    };
+  });
   return out;
 }
 

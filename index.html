@@ -169,6 +169,7 @@
     </div>
     <label class="es-search"><span aria-hidden="true">⌕</span><input id="esSearch" type="search" placeholder="ค้นหา เช่น เงินเดือน, จองรถ, DMC..." autocomplete="off"></label>
     <div class="es-chips" id="esChips"></div>
+    <div class="es-pinbar" id="esPinBar" hidden><span>📌 ทางลัดของคุณ — จำไว้ในเครื่องนี้</span><button type="button" id="esPinReset">↺ ใช้ตามส่วนกลาง</button></div>
     <div class="es-body" id="esBody"></div>
   </dialog>
 
@@ -208,6 +209,13 @@
             <p class="st-hint">ฉากทับ: ค่าบวก = เคลือบสีดำให้ตัวหนังสือชัดขึ้น • ค่าลบ = เคลือบสีขาว</p>
           </div>
           <div class="th-actions"><button type="button" class="st-btn ghost" id="bnClear" hidden>ลบรูปแบนเนอร์</button></div>
+        </div>
+      </details>
+      <details class="st-sec">
+        <summary><span class="sec-ic" style="--c:#14B8A6">🧩</span><span class="sec-tt"><b>ส่วนหัว: ข้อความ/โลโก้/ตัวการ์ตูน</b><small data-sum="hero"></small></span><i class="sec-chev" aria-hidden="true"></i></summary>
+        <div class="sec-body">
+          <p class="st-hint">ซ่อน หรือเลื่อนตำแหน่ง/ปรับขนาด เพื่อไม่ให้บังรูปแบนเนอร์ • แตะค้างที่แถบเลื่อน หน้าต่างนี้จะโปร่งให้เห็นส่วนหัวจริงขณะปรับ (ปุ่มตั้งค่า ⚙ แสดงเสมอ)</p>
+          <div id="hdBox"></div>
         </div>
       </details>
       <details class="st-sec">
