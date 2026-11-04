@@ -15,7 +15,7 @@ const ADMIN_PASSWORD = '123456';
 
 const SHEET_NAME = 'Systems';
 const HEADERS = ['id', 'name', 'desc', 'group', 'tag', 'url', 'icon', 'color'];
-const GROUPS = ['student', 'academic', 'operations'];
+const GROUPS = ['student', 'academic', 'operations', 'dept_hr', 'dept_budget', 'dept_general', 'docs', 'ict', 'community', 'forms'];
 const MAX_ITEMS = 60;
 const MAX_FAILS = 10;          // ใส่รหัสผิดได้กี่ครั้ง
 const LOCK_SECONDS = 600;     // แล้วล็อกกี่วินาที

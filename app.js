@@ -2,8 +2,8 @@ const CFG = window.HUB_CONFIG || {};
 const API = String(CFG.API_URL || "").trim();
 const BASE = "https://script.google.com/macros/s/AKfycbyNCNM0vR7VSt-RYQB8ukOGwYa1WVgvjsohiC1MoLw1pk-aC5lO5hA7h2DNywaCLagiVQ/exec";
 
-const GROUPS = {student:"งานนักเรียนและดูแลช่วยเหลือ",academic:"งานวิชาการและประเมินผล",operations:"ระบบสนับสนุนการทำงาน"};
-const GROUP_ORDER = ["student","academic","operations"];
+const GROUPS = {student:"งานกิจการนักเรียนและดูแลช่วยเหลือ",academic:"งานวิชาการและประเมินผล",operations:"ระบบสนับสนุนการทำงาน",dept_hr:"งานบุคคล",dept_budget:"งานงบประมาณและพัสดุ",dept_general:"งานบริหารทั่วไป",docs:"งานสารบรรณและเอกสาร",ict:"งานเทคโนโลยีและสารสนเทศ",community:"งานกิจกรรมและความสัมพันธ์ชุมชน",forms:"แบบฟอร์ม คู่มือ และดาวน์โหลด"};
+const GROUP_ORDER = ["student","academic","operations","dept_hr","dept_budget","dept_general","docs","ict","community","forms"];
 const PASTELS = ["#FF9DBB","#FFB38A","#FFD86B","#B5E48C","#8FE3CF","#8CCBFF","#B8A9FF","#F0A6E8"];
 const COLORS = ["#0A84FF","#00B3E6","#00BFA5","#16B364","#7CB518","#E5B800","#FF8A00","#FF6B2C","#F0284A","#FF3D81","#E02CC0","#8B5CF6","#3D5AFE","#6B7A90"];
 
@@ -113,7 +113,7 @@ async function apiPost(payload){
 }
 
 /* ===== การ์ดหน้าหลัก ===== */
-const grids = {student:$("studentGrid"),academic:$("academicGrid"),operations:$("operationsGrid")};
+const grids = {student:$("studentGrid"),academic:$("academicGrid"),operations:$("operationsGrid"),dept_hr:$("dept_hrGrid"),dept_budget:$("dept_budgetGrid"),dept_general:$("dept_generalGrid"),docs:$("docsGrid"),ict:$("ictGrid"),community:$("communityGrid"),forms:$("formsGrid")};
 const searchInput = $("searchInput"), clearSearch = $("clearSearch"), emptyState = $("emptyState");
 const favoritesKey = "banrai-school-hub-favorites-v1";
 function getFavorites(){try{return JSON.parse(localStorage.getItem(favoritesKey)||"[]")}catch{return []}}
@@ -123,7 +123,7 @@ function cardInner(s){
  return `<div class="card-head"><span class="card-icon" data-ist="${theme.ics}">${svgIcon(s.icon)}</span><button type="button" class="favorite-btn" title="รายการโปรด">☆</button></div><h4 class="card-title">${esc(s.name)}</h4><p class="card-description">${esc(s.desc)}</p><div class="card-footer"><span class="card-tag"${s.tag?"":" hidden"}>${esc(s.tag)}</span><span class="card-open" aria-hidden="true">↗</span></div>`;
 }
 function showSkeleton(){
- const n = {student:2,academic:4,operations:3};
+ const n = {student:2,academic:4,operations:3,dept_hr:0,dept_budget:0,dept_general:0,docs:0,ict:0,community:0,forms:0};
  Object.entries(grids).forEach(([k,g]) => g.innerHTML = '<div class="skeleton-card"><i></i><b></b><b></b></div>'.repeat(n[k]));
 }
 function renderCards(){
@@ -156,6 +156,7 @@ function updateCounts(){
  Object.entries(grids).forEach(([key,grid]) => {
   const n = systems.filter(s => s.group === key).length, el = grid.previousElementSibling.querySelector(".category-count");
   if(el) el.textContent = String(n).padStart(2,"0") + " ระบบ";
+  const fc = document.querySelector(`.filter-chip[data-filter="${key}"]`); if(fc) fc.hidden = n === 0;   // หมวดว่างจะซ่อนปุ่มกรอง
  });
 }
 function applyFilters(){
