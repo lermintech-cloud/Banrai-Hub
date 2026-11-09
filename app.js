@@ -187,7 +187,7 @@ function showToast(msg){const t=$("toast");t.textContent=msg;t.classList.add("sh
 
 /* ===== ตั้งค่า (เพิ่ม/แก้ไข/ลบ/เรียงปุ่ม — บันทึกออนไลน์) ===== */
 const dlg = $("settingsDialog");
-const views = ["vSetup","vLogin","vList","vForm","vTheme","vEs","vEsForm"];
+const views = ["vSetup","vLogin","vList","vForm","vTheme","vEs","vEsForm","vQuick"];
 let stTab = "manage";
 const admin = {pass:"", draft:[], dirty:false, editing:null, icon:"link", color:COLORS[0]};
 const esf = {mode:"link", editing:null, icon:"link", color:COLORS[0]};   // ฟอร์มเพิ่ม/แก้ไขลิงก์ E-Service
@@ -202,7 +202,7 @@ function showView(name){
  views.forEach(v => $(v).hidden = v !== name); dlg.scrollTop = 0;
  const sub = name === "vForm" || name === "vEsForm";
  $("stTabs").hidden = sub;
- if(!sub){ stTab = name === "vTheme" ? "theme" : name === "vEs" ? "es" : (name === "vLogin" && (stTab === "es" || stTab === "theme")) ? stTab : "manage"; $("stTabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === stTab)); }
+ if(!sub){ stTab = name === "vTheme" ? "theme" : name === "vEs" ? "es" : name === "vQuick" ? "quick" : (name === "vLogin" && (stTab === "es" || stTab === "theme")) ? stTab : "manage"; $("stTabs").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === stTab)); }
  $("stTitle").textContent = name === "vForm" ? (admin.editing ? "แก้ไขปุ่ม" : "เพิ่มปุ่มใหม่")
   : name === "vEsForm" ? (esf.mode === "cat" ? (esf.editing ? "แก้ไขหมวด" : "เพิ่มหมวด") : (esf.editing ? "แก้ไขลิงก์" : "เพิ่มลิงก์")) : "ตั้งค่า";
 }
@@ -220,12 +220,12 @@ function openSettings(tab){
  if(typeof dlg.showModal !== "function"){ showToast("เบราว์เซอร์นี้ไม่รองรับหน้าตั้งค่า"); return; }
  if(typeof tab === "string") stTab = tab;
  dlg.showModal();
- if(stTab === "theme") showView("vTheme"); else if(stTab === "es") showEs(); else showManage();
+ if(stTab === "theme") showView("vTheme"); else if(stTab === "es") showEs(); else if(stTab === "quick") showQuick(); else showManage();
 }
 $("stTabs").addEventListener("click", e => {
  const b = e.target.closest("button[data-tab]"); if(!b) return;
  stTab = b.dataset.tab;
- if(b.dataset.tab === "theme") showView("vTheme"); else if(b.dataset.tab === "es") showEs(); else showManage();
+ if(b.dataset.tab === "theme") showView("vTheme"); else if(b.dataset.tab === "es") showEs(); else if(b.dataset.tab === "quick") showQuick(); else showManage();
 });
 function requestClose(){
  if((admin.dirty || esDirty || themeDirty) && !confirm("มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึกขึ้นออนไลน์ ต้องการปิดและทิ้งการแก้ไขหรือไม่?")) return;
@@ -362,7 +362,69 @@ clearSearch.addEventListener("click", () => { searchInput.value = ""; applyFilte
 document.querySelectorAll(".filter-chip").forEach(b => b.addEventListener("click", () => { activeFilter = b.dataset.filter; applyFilters(); }));
 $("resetFilters").addEventListener("click", () => { activeFilter = "all"; searchInput.value = ""; applyFilters(); });
 $("favoritesNav").addEventListener("click", () => { activeFilter = "favorite"; applyFilters(); document.querySelector(".welcome-row").scrollIntoView({behavior:"smooth"}); });
-$("searchFab").addEventListener("click", () => { searchInput.focus(); window.scrollTo({top:document.querySelector(".search-panel").getBoundingClientRect().top+window.scrollY-20,behavior:"smooth"}); });
+/* ===== เมนูด่วน: กดปุ่มแว่นขยายด้านล่างแล้วมีปุ่มลัด 3 ปุ่มเด้งขึ้น (ตั้งค่าได้ในตั้งค่า > เมนูด่วน) ===== */
+const QUICK_KEY = "banrai-hub-quick-v1", QUICK_DEFAULT = ["search","favorites","es"];
+const QUICK_ACTIONS = {
+ search:{ic:"⌕", label:"ค้นหา", run(){ searchInput.focus(); window.scrollTo({top:document.querySelector(".search-panel").getBoundingClientRect().top+window.scrollY-20,behavior:"smooth"}); }},
+ favorites:{ic:"☆", label:"รายการโปรด", run(){ activeFilter = "favorite"; applyFilters(); document.querySelector(".welcome-row").scrollIntoView({behavior:"smooth"}); }},
+ es:{ic:"🏛", label:"บริการ สพป.", run(){ openEs(); }},
+ home:{ic:"⌂", label:"หน้าหลัก", run(){ activeFilter = "all"; searchInput.value = ""; applyFilters(); window.scrollTo({top:0,behavior:"smooth"}); }},
+ settings:{ic:"⚙", label:"ตั้งค่า", run(){ openSettings(); }},
+ theme:{ic:"🎨", label:"หน้าตา", run(){ openSettings("theme"); }},
+ install:{ic:"📲", label:"ติดตั้งแอป", run(){ installApp(); }},
+ about:{ic:"ⓘ", label:"เกี่ยวกับ", run(){ $("footer") ? $("footer").scrollIntoView({behavior:"smooth"}) : window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"}); }},
+ top:{ic:"⬆", label:"ขึ้นบนสุด", run(){ window.scrollTo({top:0,behavior:"smooth"}); }}
+};
+function quickResolve(v){
+ if(QUICK_ACTIONS[v]) return {ic:QUICK_ACTIONS[v].ic, label:QUICK_ACTIONS[v].label, run:QUICK_ACTIONS[v].run};
+ if(typeof v === "string" && v.startsWith("sys:")){
+  const s = systems.find(x => x.id === v.slice(4));
+  if(s) return {ic:"", svg:svgIcon(s.icon), color:s.color, label:s.name, run(){ window.open(safeUrl(s.url), "_blank", "noopener"); }};
+ }
+ return null;
+}
+function quickLoad(){
+ let arr = null; try{ arr = JSON.parse(localStorage.getItem(QUICK_KEY)); }catch{}
+ if(!Array.isArray(arr)) arr = QUICK_DEFAULT;
+ return [0,1,2].map(i => typeof arr[i] === "string" ? arr[i] : QUICK_DEFAULT[i]);
+}
+let quickSlots = quickLoad();
+function quickSave(){ try{ localStorage.setItem(QUICK_KEY, JSON.stringify(quickSlots)); }catch{} }
+function quickBtnHtml(v, i){
+ const r = quickResolve(v) || quickResolve(QUICK_DEFAULT[i]);
+ const ic = r.svg ? `<span class="q-ic q-svg" style="--c:${esc(r.color || "#0A84FF")}">${r.svg}</span>` : `<span class="q-ic">${r.ic}</span>`;
+ return `<button type="button" class="quick-item" role="menuitem" data-i="${i}" style="--d:${i * 45}ms">${ic}<b>${esc(r.label)}</b></button>`;
+}
+function renderQuick(){ $("quickMenu").innerHTML = quickSlots.map(quickBtnHtml).join(""); }
+function quickOpen(open){
+ const m = $("quickMenu"), sc = $("quickScrim"), fab = $("searchFab");
+ if(open){ renderQuick(); m.hidden = false; sc.hidden = false; requestAnimationFrame(() => { m.classList.add("show"); sc.classList.add("show"); }); }
+ else{ m.classList.remove("show"); sc.classList.remove("show"); clearTimeout(quickOpen.t); quickOpen.t = setTimeout(() => { if(!m.classList.contains("show")){ m.hidden = true; sc.hidden = true; } }, 220); }
+ fab.classList.toggle("open", open); fab.setAttribute("aria-expanded", String(open));
+}
+$("searchFab").setAttribute("aria-haspopup", "menu"); $("searchFab").setAttribute("aria-expanded", "false");
+$("searchFab").addEventListener("click", () => quickOpen($("quickMenu").hidden || !$("quickMenu").classList.contains("show")));
+$("quickScrim").addEventListener("click", () => quickOpen(false));
+document.addEventListener("keydown", e => { if(e.key === "Escape" && $("quickMenu").classList.contains("show")) quickOpen(false); });
+$("quickMenu").addEventListener("click", e => {
+ const b = e.target.closest("button[data-i]"); if(!b) return;
+ const r = quickResolve(quickSlots[+b.dataset.i]) || quickResolve(QUICK_DEFAULT[+b.dataset.i]);
+ quickOpen(false); setTimeout(() => r.run(), 120);
+});
+/* ตั้งค่า: เลือกปุ่มของเมนูด่วน */
+function quickOptionsHtml(cur){
+ const acts = Object.entries(QUICK_ACTIONS).map(([k,v]) => `<option value="${k}"${k === cur ? " selected" : ""}>${v.ic} ${esc(v.label)}</option>`).join("");
+ const sys = systems.map(s => `<option value="sys:${esc(s.id)}"${"sys:" + s.id === cur ? " selected" : ""}>${esc(s.name)}</option>`).join("");
+ return `<optgroup label="คำสั่งในแอป">${acts}</optgroup>` + (sys ? `<optgroup label="ปุ่มระบบ">${sys}</optgroup>` : "");
+}
+function syncQuickUI(){
+ [0,1,2].forEach(i => { $("quickSel" + i).innerHTML = quickOptionsHtml(quickSlots[i]); });
+ $("quickPrev").innerHTML = quickSlots.map(quickBtnHtml).join("");
+}
+function showQuick(){ syncQuickUI(); showView("vQuick"); }
+[0,1,2].forEach(i => $("quickSel" + i).addEventListener("change", e => { quickSlots[i] = e.target.value; quickSave(); syncQuickUI(); }));
+$("quickReset").addEventListener("click", () => { quickSlots = [...QUICK_DEFAULT]; quickSave(); syncQuickUI(); showToast("คืนค่าเมนูด่วนเริ่มต้นแล้ว"); });
+$("quickDone").addEventListener("click", requestClose);
 $("settingsNav").addEventListener("click", openSettings);
 $("settingsBtn").addEventListener("click", openSettings);
 document.addEventListener("visibilitychange", async () => {

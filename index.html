@@ -188,6 +188,8 @@
     <button class="bottom-item" id="settingsNav" type="button"><span class="nav-icon">⚙</span><span>ตั้งค่า</span></button>
     <a href="#footer" id="infoNav" class="bottom-item"><span class="nav-icon">ⓘ</span><span>เกี่ยวกับ</span></a>
   </nav>
+  <div class="quick-scrim" id="quickScrim" hidden></div>
+  <div class="quick-menu" id="quickMenu" role="menu" aria-label="เมนูด่วน" hidden></div>
   <button class="install-fab" id="installFab" type="button" aria-label="ติดตั้งแอป" title="ติดตั้งแอปไว้บนหน้าจอ">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="M12 7.5v6M9.3 11l2.7 2.8 2.7-2.8M10.5 18h3"/></svg>
     <span class="fab-label">ติดตั้งแอป</span>
@@ -209,7 +211,7 @@
   <dialog id="settingsDialog" class="settings-dialog">
     <div class="st-head"><div><p class="section-kicker">SETTINGS</p><h2 id="stTitle">ตั้งค่า</h2></div><button class="dialog-close" id="stClose" type="button" aria-label="ปิด">×</button></div>
 
-    <div class="st-tabs" id="stTabs" role="tablist"><button type="button" role="tab" data-tab="theme"><i>🎨</i>หน้าตา</button><button type="button" role="tab" data-tab="manage"><i>🧩</i>ปุ่มระบบ</button><button type="button" role="tab" data-tab="es"><i>🏛</i>บริการ สพป.</button></div>
+    <div class="st-tabs" id="stTabs" role="tablist"><button type="button" role="tab" data-tab="theme"><i>🎨</i>หน้าตา</button><button type="button" role="tab" data-tab="manage"><i>🧩</i>ปุ่มระบบ</button><button type="button" role="tab" data-tab="es"><i>🏛</i>บริการ สพป.</button><button type="button" role="tab" data-tab="quick"><i>⚡</i>เมนูด่วน</button></div>
 
     <section id="vTheme" hidden>
       <div class="th-scope">
@@ -336,6 +338,20 @@
       </details>
 
       <div class="st-savebar"><span class="es-auto" id="esAuto">✓ บันทึกอัตโนมัติในเครื่องนี้</span><span id="esDirtyNote" hidden></span><button class="st-btn ghost" id="esDone" type="button">ปิด</button><button class="st-btn primary" id="esSaveOnline" type="button" hidden>บันทึกขึ้นออนไลน์</button></div>
+    </section>
+
+    <section id="vQuick" hidden>
+      <details class="st-sec" open>
+        <summary><span class="sec-ic" style="--c:#F59E0B">⚡</span><span class="sec-tt"><b>เมนูด่วนบนมือถือ</b><small>กดปุ่มแว่นขยายด้านล่างแล้วจะมีปุ่มลัดเด้งขึ้นมา 3 ปุ่ม</small></span><i class="sec-chev" aria-hidden="true"></i></summary>
+        <div class="sec-body">
+          <div class="quick-prev" id="quickPrev" aria-hidden="true"></div>
+          <label class="st-field"><span>ปุ่มที่ 1 (ซ้าย)</span><select id="quickSel0"></select></label>
+          <label class="st-field"><span>ปุ่มที่ 2 (กลาง)</span><select id="quickSel1"></select></label>
+          <label class="st-field"><span>ปุ่มที่ 3 (ขวา)</span><select id="quickSel2"></select></label>
+          <p class="st-hint">เลือกได้ทั้งคำสั่งในแอป (ค้นหา, รายการโปรด, บริการ สพป. ฯลฯ) และปุ่มระบบแต่ละตัว • จำไว้เฉพาะเครื่อง/เบราว์เซอร์นี้</p>
+          <div class="st-savebar"><button class="st-btn ghost" id="quickReset" type="button">คืนค่าเริ่มต้น</button><button class="st-btn primary" id="quickDone" type="button">เสร็จแล้ว</button></div>
+        </div>
+      </details>
     </section>
 
     <section id="vEsForm" hidden>
